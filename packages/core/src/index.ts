@@ -14,3 +14,4 @@ export * from "./discriminators.js";
 export * from "./instructions.js";
 export * from "./precompile.js";
 export * from "./coordinator.js";
+export * from "./complete.js";
