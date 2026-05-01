@@ -12,3 +12,4 @@ export * from "./pda.js";
 export * from "./accounts.js";
 export * from "./discriminators.js";
 export * from "./instructions.js";
+export * from "./precompile.js";
