@@ -1,0 +1,8 @@
+// @causeway-sh/core — Causeway TypeScript SDK, core package.
+//
+// Re-exports the public surface: enums, PDAs, account decoders,
+// program ix builders, Solana precompile ix builders, the
+// coordinator gRPC-Web client, the `complete_signing` convenience
+// helper, and typed SDK errors.
+
+export const VERSION = "0.1.0-alpha.0";
