@@ -10,3 +10,5 @@ export const VERSION = "0.1.0-alpha.0";
 export * from "./enums.js";
 export * from "./pda.js";
 export * from "./accounts.js";
+export * from "./discriminators.js";
+export * from "./instructions.js";
