@@ -14,3 +14,4 @@ export * from "./address.js";
 export * from "./zip244.js";
 export * from "./tx.js";
 export * from "./sign.js";
+export * from "./lwd.js";
