@@ -10,3 +10,4 @@
 export const VERSION = "0.1.0-alpha.0";
 
 export * from "./pda.js";
+export * from "./status.js";
