@@ -131,6 +131,15 @@ importers:
         specifier: ^2.1.4
         version: 2.1.9(@types/node@20.19.40)
 
+  tests/bundle-size:
+    devDependencies:
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.4
+        version: 2.1.9(@types/node@20.19.40)
+
   tests/cross-runtime:
     dependencies:
       '@causeway-sh/btc':
