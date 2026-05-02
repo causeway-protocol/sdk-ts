@@ -2,6 +2,12 @@
 // broadcast path; dApps usually bring their own (BlockCypher, Esplora,
 // etc.) — this is a convenience for the docker-compose flow.
 
+export interface GetTxOutResult {
+  value: number;
+  scriptPubKey: { hex: string };
+  confirmations: number;
+}
+
 export interface BitcoindRpcOptions {
   /// `http://user:pass@host:port` (or `https://...`) for the bitcoind
   /// JSON-RPC endpoint.
@@ -27,12 +33,8 @@ export class BitcoindRpcClient {
     return (await this.call("sendrawtransaction", [rawTxHex])) as string;
   }
 
-  async getTxOut(txid: string, vout: number): Promise<{
-    value: number;
-    scriptPubKey: { hex: string };
-    confirmations: number;
-  } | null> {
-    return (await this.call("gettxout", [txid, vout, true])) as any;
+  async getTxOut(txid: string, vout: number): Promise<GetTxOutResult | null> {
+    return (await this.call("gettxout", [txid, vout, true])) as GetTxOutResult | null;
   }
 
   async getBlockCount(): Promise<number> {
