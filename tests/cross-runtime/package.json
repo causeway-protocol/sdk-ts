@@ -1,0 +1,19 @@
+{
+  "name": "@causeway-sh/cross-runtime-tests",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@causeway-sh/btc": "workspace:^",
+    "@causeway-sh/core": "workspace:^",
+    "@causeway-sh/evm": "workspace:^",
+    "@causeway-sh/zec": "workspace:^"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.4"
+  }
+}

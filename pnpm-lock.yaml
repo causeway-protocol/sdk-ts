@@ -131,6 +131,28 @@ importers:
         specifier: ^2.1.4
         version: 2.1.9(@types/node@20.19.40)
 
+  tests/cross-runtime:
+    dependencies:
+      '@causeway-sh/btc':
+        specifier: workspace:^
+        version: link:../../packages/btc
+      '@causeway-sh/core':
+        specifier: workspace:^
+        version: link:../../packages/core
+      '@causeway-sh/evm':
+        specifier: workspace:^
+        version: link:../../packages/evm
+      '@causeway-sh/zec':
+        specifier: workspace:^
+        version: link:../../packages/zec
+    devDependencies:
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.4
+        version: 2.1.9(@types/node@20.19.40)
+
 packages:
 
   '@adraffy/ens-normalize@1.11.1':
