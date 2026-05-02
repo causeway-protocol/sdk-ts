@@ -1,0 +1,30 @@
+{
+  "name": "@causeway-sh/zec",
+  "version": "0.1.0-alpha.0",
+  "description": "Causeway ZEC helpers for TypeScript — t-address derivation, ZIP-244 v5 sighash, scriptSig assembly.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
+  "files": ["dist", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit"
+  },
+  "publishConfig": { "access": "public" },
+  "repository": { "type": "git", "url": "https://github.com/causeway-sh/sdk-ts" },
+  "homepage": "https://causeway.sh",
+  "dependencies": {
+    "@causeway-sh/core": "workspace:^",
+    "@noble/hashes": "^1.5.0",
+    "@noble/curves": "^1.6.0",
+    "bs58check": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.4"
+  }
+}
