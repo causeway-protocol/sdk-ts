@@ -6,6 +6,8 @@ export const AssetId = {
   Btc: 0,
   Eth: 1,
   ZecT: 2,
+  Sapling: 3,
+  Orchard: 4,
 } as const;
 export type AssetId = (typeof AssetId)[keyof typeof AssetId];
 
@@ -43,6 +45,8 @@ export const SighashKind = {
   EthLegacy: 2,
   EthEip1559: 3,
   ZecTransparentZip244: 4,
+  SaplingSpendAuth: 5,
+  OrchardSpendAuth: 6,
 } as const;
 export type SighashKind = (typeof SighashKind)[keyof typeof SighashKind];
 
@@ -50,5 +54,7 @@ export const SignatureFormat = {
   Schnorr64: 0,
   EcdsaDer: 1,
   EcdsaRecoverable65: 2,
+  RedJubjub64: 3,
+  RedPallas64: 4,
 } as const;
 export type SignatureFormat = (typeof SignatureFormat)[keyof typeof SignatureFormat];

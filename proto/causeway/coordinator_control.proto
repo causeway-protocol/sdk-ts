@@ -1,0 +1,104 @@
+syntax = "proto3";
+
+// CLI ↔ coordinator control plane. Mirrors the main-repo file at
+// `coordinator/proto/coordinator_control.proto` (sha256 verified at
+// `pnpm proto:check`). Vendored here so the sdk-ts repo can `buf
+// generate` without a path-dep on the main repo.
+
+package causeway.coordinator.v1;
+
+message RunSigningRoundRequest {
+  bytes signing_request_pda = 1;       // 32 bytes
+  bytes sighash_to_sign = 2;           // 32 bytes
+  bytes derivation_path_canonical = 3; // ≤ 133 bytes
+  bytes derivation_path_hash = 4;      // 32 bytes
+  uint32 attempt_index = 5;            // 0..=MAX_RETRIES
+  uint32 participating_bitmask = 6;    // low 7 bits set per M1 5-of-7
+  string asset = 7;                    // "Btc" | "Eth" | "ZecT" | "Sapling" | "Orchard"
+  uint32 sighash_kind = 8;
+  bytes vault = 9;                     // 32 bytes
+  bool is_rotation_drain = 10;
+  bytes destination_address_hash = 11;
+  uint32 signature_format = 12;
+}
+
+message OperatorAttestation {
+  uint32 participant_index = 1;
+  bytes ed25519_signature = 2;  // 64 bytes
+  bytes identity_pubkey = 3;    // 32 bytes
+}
+
+message RunSigningRoundResponse {
+  bool success = 1;
+  bytes round_id = 2;          // 32 bytes
+  bytes final_signature = 3;   // 64 bytes
+  repeated OperatorAttestation attestations = 4;
+  string error_message = 5;
+}
+
+message RunEcdsaSigningRoundRequest {
+  bytes signing_request_pda = 1;
+  bytes msg_hash = 2;
+  bytes derivation_path_canonical = 3;
+  bytes derivation_path_hash = 4;
+  uint32 attempt_index = 5;
+  uint32 participating_bitmask = 6;
+  bytes vault = 7;
+  bytes tenant_program_id = 8;
+  uint32 epoch = 9;
+  uint32 sighash_kind = 10;
+  bytes tenant_authority_pda = 11;
+  uint32 asset = 12;
+}
+
+message OperatorEcdsaAttestation {
+  uint32 participant_index = 1;
+  bytes ed25519_signature = 2;
+  bytes identity_pubkey = 3;
+  bytes eth_address = 4;
+}
+
+message RunEcdsaSigningRoundResponse {
+  bool success = 1;
+  bytes round_id = 2;
+  bytes signature_r = 3;
+  bytes signature_s = 4;
+  uint32 recovery_byte = 5;
+  bytes tweaked_pubkey_compressed = 6;
+  repeated OperatorEcdsaAttestation attestations = 7;
+  string error_message = 8;
+}
+
+// Sapling shielded spend. Unlike the Schnorr/ECDSA RPCs above, the
+// coordinator owns the full transaction-construction pipeline: it
+// builds the v5 PCZT, runs Groth16, computes the ZIP-244 sighash,
+// drives the FROST-RedJubjub round, and returns a broadcast-ready
+// raw transaction. Necessary because the spend-auth signature is
+// over a sighash that depends on the proof-bound `rk`, which the
+// caller doesn't have.
+message BuildAndSignSaplingSpendRequest {
+  bytes signing_request_pda = 1;       // 32 bytes
+  bytes vault = 2;                     // 32 bytes
+  bytes recipient_payment_address_raw = 3; // 43 bytes (diversifier ‖ pk_d)
+  uint64 amount_zat = 4;
+  uint64 fee_zat = 5;
+  uint64 note_position = 6;
+  bytes note_rcm = 7;                  // 32 bytes
+  uint32 anchor_height = 8;
+  uint32 attempt_index = 9;
+  uint32 participating_bitmask = 10;
+}
+
+message BuildAndSignSaplingSpendResponse {
+  bool success = 1;
+  bytes raw_tx = 2;
+  bytes sighash = 3;                   // 32 bytes (ZIP-244 shielded sighash)
+  bytes txid = 4;                      // 32 bytes
+  string error_message = 5;
+}
+
+service CoordinatorControl {
+  rpc RunSigningRound(RunSigningRoundRequest) returns (RunSigningRoundResponse);
+  rpc RunEcdsaSigningRound(RunEcdsaSigningRoundRequest) returns (RunEcdsaSigningRoundResponse);
+  rpc BuildAndSignSaplingSpend(BuildAndSignSaplingSpendRequest) returns (BuildAndSignSaplingSpendResponse);
+}

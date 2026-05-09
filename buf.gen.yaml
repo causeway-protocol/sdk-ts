@@ -1,0 +1,8 @@
+version: v2
+plugins:
+  # Generates both message types AND service descriptors usable with
+  # @connectrpc/connect — protoc-gen-es v2 unified codegen.
+  - local: ./node_modules/.bin/protoc-gen-es
+    out: packages/core/src/gen
+    opt:
+      - target=ts

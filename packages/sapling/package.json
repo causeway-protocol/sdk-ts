@@ -1,0 +1,28 @@
+{
+  "name": "@causeway-sh/sapling",
+  "version": "0.1.0-alpha.0",
+  "description": "Causeway Sapling shielded helpers for TypeScript — bech32 z-address parse/encode + sendToZaddr end-to-end (coordinator drives PCZT/Groth16/FROST).",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
+  "files": ["dist", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit"
+  },
+  "publishConfig": { "access": "public" },
+  "repository": { "type": "git", "url": "https://github.com/causeway-sh/sdk-ts" },
+  "homepage": "https://causeway.sh",
+  "dependencies": {
+    "@causeway-sh/core": "workspace:^",
+    "@scure/base": "^1.1.7"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.4"
+  }
+}

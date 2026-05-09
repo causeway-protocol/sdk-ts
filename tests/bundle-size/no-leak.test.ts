@@ -24,10 +24,20 @@ function readPkg(rel: string): PackageJson {
   return JSON.parse(readFileSync(resolve(sdkRoot, rel), "utf8")) as PackageJson;
 }
 
-const ASSET_NAMES = ["@causeway-sh/btc", "@causeway-sh/zec", "@causeway-sh/evm"] as const;
+const ASSET_NAMES = [
+  "@causeway-sh/btc",
+  "@causeway-sh/zec",
+  "@causeway-sh/evm",
+  "@causeway-sh/sapling",
+] as const;
 
 describe("bundle-size leak guard", () => {
-  for (const assetPkg of ["packages/evm", "packages/zec", "packages/btc"]) {
+  for (const assetPkg of [
+    "packages/evm",
+    "packages/zec",
+    "packages/btc",
+    "packages/sapling",
+  ]) {
     it(`${assetPkg} does not depend on any other asset package`, () => {
       const pkg = readPkg(`${assetPkg}/package.json`);
       const deps = Object.keys(pkg.dependencies ?? {});
