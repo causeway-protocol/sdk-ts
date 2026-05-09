@@ -1,7 +1,15 @@
-// Account decoders for SigningRequest, Vault, ProtocolConfig.
-// Layouts mirror `programs/causeway/src/state/`.
+// Account decoders + RPC fetchers for SigningRequest, Vault,
+// ProtocolConfig. Layouts mirror `programs/causeway/src/state/`.
+//
+// Fetchers wrap `Connection.getAccountInfo(pda)` and dispatch through
+// the matching decoder. They're the canonical way for a dApp to read
+// vault state without ever touching the bootstrap CLI's on-disk
+// `public-key-*.hex` files — `Vault.thresholdPubkey` on chain is the
+// authoritative source after `initialize_vault` has run.
 
-import { PublicKey } from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
+import { AssetId as AssetIdEnum } from "./enums.js";
+import { findVaultPda, findSigningRequestPda, findProtocolConfigPda } from "./pda.js";
 import { BorshReader } from "./borsh.js";
 import {
   AssetId,
@@ -166,4 +174,54 @@ export function decodeProtocolConfig(data: Uint8Array): ProtocolConfig {
   const kSig = r.u8();
   const nOp = r.u8();
   return { bump, authority, m1Frozen, kSig, nOp };
+}
+
+// ----- RPC fetchers -----------------------------------------------
+//
+// Each fetcher derives the PDA, calls Connection.getAccountInfo, and
+// runs the decoder. Returns `null` when the account doesn't exist —
+// the caller decides whether that's an error or a "not initialised
+// yet" case.
+
+/// Fetch the Causeway protocol config singleton.
+export async function fetchProtocolConfig(
+  connection: Connection,
+  causewayProgramId: PublicKey,
+): Promise<ProtocolConfig | null> {
+  const [pda] = findProtocolConfigPda(causewayProgramId);
+  const info = await connection.getAccountInfo(pda);
+  if (!info) return null;
+  return decodeProtocolConfig(info.data);
+}
+
+/// Fetch the per-(asset, epoch) Vault account. Returns null if the
+/// vault has not been initialised yet.
+///
+/// `vault.thresholdPubkey` is the 33-byte authoritative group pubkey
+/// for every off-chain address derivation. Pass it into
+/// `@causeway-sh/btc`'s `deriveVaultAddress`, `@causeway-sh/evm`'s
+/// equivalent, etc. The bootstrap CLI's `public-key-*.hex` files are
+/// internal artefacts and should NOT be read by dApps.
+export async function fetchVault(
+  connection: Connection,
+  causewayProgramId: PublicKey,
+  asset: AssetIdEnum,
+  epoch: number,
+): Promise<Vault | null> {
+  const [pda] = findVaultPda(causewayProgramId, asset, epoch);
+  const info = await connection.getAccountInfo(pda);
+  if (!info) return null;
+  return decodeVault(info.data);
+}
+
+/// Fetch a SigningRequest by its PDA. Used after submitting
+/// `initiate_*_send` to observe the on-chain lifecycle (Pending →
+/// Completed). Returns null until the SigningRequest is created.
+export async function fetchSigningRequest(
+  connection: Connection,
+  pda: PublicKey,
+): Promise<SigningRequest | null> {
+  const info = await connection.getAccountInfo(pda);
+  if (!info) return null;
+  return decodeSigningRequest(info.data);
 }

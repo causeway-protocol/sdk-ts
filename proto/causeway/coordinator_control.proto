@@ -97,8 +97,85 @@ message BuildAndSignSaplingSpendResponse {
   string error_message = 5;
 }
 
+// Sapling vault address discovery. A dApp can't reconstruct a vault's
+// zaddr from on-chain state alone: bech32 commits to (ak ‖ nk ‖ ovk)
+// plus a chosen diversifier, but only `ak` is on-chain in
+// `Vault.threshold_pubkey`. nk/ovk/diversifier live in the
+// coordinator. This RPC surfaces them — the bech32 zaddr itself is
+// public (a deposit address), even though the material that produces
+// it is private.
+message GetSaplingVaultAddressRequest {
+  bytes vault = 1; // optional; M2.0 single-vault deployments leave empty
+}
+
+message GetSaplingVaultAddressResponse {
+  bool success = 1;
+  string payment_address_bech32 = 2;
+  bytes payment_address_raw = 3;     // 43 raw bytes (diversifier(11) ‖ pk_d(32))
+  string network = 4;                // "mainnet" | "testnet" | "regtest"
+  string error_message = 5;
+}
+
+// Two-phase Sapling spend with on-chain audit trail (coordinator-side
+// pieces; the on-chain piece is `tenant::initiate_sapling_send` +
+// `causeway::complete_signing`).
+message PrepareSaplingSpendRequest {
+  bytes vault = 1;
+  bytes recipient_payment_address_raw = 2; // 43 bytes
+  uint64 amount_zat = 3;
+  uint64 fee_zat = 4;
+  bytes derivation_path_hash = 5; // 32 bytes
+}
+
+message PrepareSaplingSpendResponse {
+  bool success = 1;
+  bytes sighash_to_sign = 2;       // 32 bytes
+  bytes session_id = 3;            // 16 bytes
+  uint32 anchor_height = 4;
+  string error_message = 5;
+}
+
+message RunSaplingSigningRoundRequest {
+  bytes session_id = 1;            // 16 bytes
+  bytes signing_request_pda = 2;   // 32 bytes
+  bytes vault = 3;                 // 32 bytes
+  bytes derivation_path_hash = 4;  // 32 bytes
+  uint32 attempt_index = 5;
+  uint32 participating_bitmask = 6;
+}
+
+message RunSaplingSigningRoundResponse {
+  bool success = 1;
+  bytes round_id = 2;              // 32 bytes
+  bytes final_signature = 3;       // 64 bytes (FROST-RedJubjub spend-auth)
+  repeated OperatorAttestation attestations = 4;
+  bytes raw_tx = 5;
+  bytes txid = 6;                  // 32 bytes
+  string error_message = 7;
+}
+
 service CoordinatorControl {
   rpc RunSigningRound(RunSigningRoundRequest) returns (RunSigningRoundResponse);
   rpc RunEcdsaSigningRound(RunEcdsaSigningRoundRequest) returns (RunEcdsaSigningRoundResponse);
   rpc BuildAndSignSaplingSpend(BuildAndSignSaplingSpendRequest) returns (BuildAndSignSaplingSpendResponse);
+  rpc PrepareSaplingSpend(PrepareSaplingSpendRequest) returns (PrepareSaplingSpendResponse);
+  rpc RunSaplingSigningRound(RunSaplingSigningRoundRequest) returns (RunSaplingSigningRoundResponse);
+  rpc GetSaplingVaultAddress(GetSaplingVaultAddressRequest) returns (GetSaplingVaultAddressResponse);
+  rpc BroadcastSaplingTx(BroadcastSaplingTxRequest) returns (BroadcastSaplingTxResponse);
+}
+
+// Broadcast a v5 Sapling transaction via the coordinator's configured
+// lightwalletd. Use this after RunSaplingSigningRound so the caller
+// never needs to run its own lwd/zcashd.
+message BroadcastSaplingTxRequest {
+  bytes raw_tx = 1;
+}
+
+message BroadcastSaplingTxResponse {
+  bool success = 1;
+  // 32-byte transaction id, computed locally from raw_tx.
+  bytes txid = 2;
+  // lightwalletd error code if non-zero. 0 means success.
+  int32 lwd_error_code = 3;
+  string error_message = 4;
 }

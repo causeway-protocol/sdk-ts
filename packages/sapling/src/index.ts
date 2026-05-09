@@ -20,3 +20,4 @@ export const VERSION = "0.1.0-alpha.0";
 export * from "./address.js";
 export * from "./zcashd.js";
 export * from "./send.js";
+export * from "./vault.js";

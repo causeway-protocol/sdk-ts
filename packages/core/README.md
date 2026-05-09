@@ -40,7 +40,7 @@ import {
 } from "@causeway-sh/core";
 import { PublicKey } from "@solana/web3.js";
 
-const programId = new PublicKey("F3yjcupHLtAkAVfdpY9NMdxn5efFD9ThiCWxVqrgin3w");
+const programId = new PublicKey("<your-causeway-program-id>");
 const [vaultPda] = findVaultPda(programId, AssetId.Eth, 1);
 
 const coord = new GrpcWebCoordinatorClient({ baseUrl: "https://coordinator.causeway.sh" });

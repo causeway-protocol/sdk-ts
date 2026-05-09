@@ -129,6 +129,87 @@ export interface BuildAndSignSaplingSpendResponse {
   errorMessage: string;
 }
 
+export interface PrepareSaplingSpendRequest {
+  vault: Uint8Array;             // 32 bytes
+  /// Raw 43-byte bech32 payload (diversifier(11) ‖ pk_d(32)).
+  recipientPaymentAddressRaw: Uint8Array;
+  amountZat: bigint;
+  feeZat: bigint;
+  /// 32-byte hash of the canonical derivation path.
+  derivationPathHash: Uint8Array;
+}
+
+export interface PrepareSaplingSpendResponse {
+  success: boolean;
+  /// 32-byte ZIP-244 shielded sighash. Caller commits to this
+  /// on-chain via `tenant_demo::initiate_sapling_send`.
+  sighashToSign: Uint8Array;
+  /// 16-byte opaque session id. Bound to (vault, recipient, amount,
+  /// fee, derivation_path_hash); coordinator caches the prepared
+  /// (PCZT, alpha, anchor) under it with a TTL.
+  sessionId: Uint8Array;
+  anchorHeight: number;
+  errorMessage: string;
+}
+
+export interface RunSaplingSigningRoundRequest {
+  sessionId: Uint8Array;          // 16 bytes
+  signingRequestPda: Uint8Array;  // 32 bytes
+  vault: Uint8Array;              // 32 bytes
+  derivationPathHash: Uint8Array; // 32 bytes
+  attemptIndex: number;
+  participatingBitmask?: number;
+}
+
+export interface RunSaplingSigningRoundResponse {
+  success: boolean;
+  /// 32-byte canonical round id.
+  roundId: Uint8Array;
+  /// 64-byte aggregated FROST-RedJubjub spend-auth signature. Caller
+  /// passes this as `signature_blob` to on-chain `complete_signing`.
+  finalSignature: Uint8Array;
+  /// Per-operator Ed25519 attestations over the I4 payload hash.
+  attestations: OperatorAttestation[];
+  /// Broadcast-ready v5 transaction bytes.
+  rawTx: Uint8Array;
+  /// 32-byte transaction id.
+  txid: Uint8Array;
+  errorMessage: string;
+}
+
+export interface GetSaplingVaultAddressRequest {
+  /// Optional. For M2.0 single-vault deployments leave empty; the
+  /// coordinator returns the configured vault's zaddr.
+  vault?: Uint8Array;
+}
+
+export interface GetSaplingVaultAddressResponse {
+  success: boolean;
+  /// bech32 string (`zs1…` mainnet, `ztestsapling1…` testnet,
+  /// `zregtestsapling1…` regtest).
+  paymentAddressBech32: string;
+  /// Raw 43 bytes — bech32 payload (diversifier(11) ‖ pk_d(32)).
+  paymentAddressRaw: Uint8Array;
+  /// "mainnet" | "testnet" | "regtest".
+  network: string;
+  errorMessage: string;
+}
+
+export interface BroadcastSaplingTxRequest {
+  /// v5 Sapling transaction bytes (from RunSaplingSigningRound.rawTx).
+  rawTx: Uint8Array;
+}
+
+export interface BroadcastSaplingTxResponse {
+  success: boolean;
+  /// 32-byte transaction id, computed locally by the coordinator from
+  /// raw_tx (lightwalletd SendResponse doesn't return one).
+  txid: Uint8Array;
+  /// Non-zero lightwalletd error code on rejection. 0 on success.
+  lwdErrorCode: number;
+  errorMessage: string;
+}
+
 // ----- CoordinatorClient interface -------------------------------
 
 export interface CoordinatorClient {
@@ -139,6 +220,18 @@ export interface CoordinatorClient {
   buildAndSignSaplingSpend(
     req: BuildAndSignSaplingSpendRequest,
   ): Promise<BuildAndSignSaplingSpendResponse>;
+  prepareSaplingSpend(
+    req: PrepareSaplingSpendRequest,
+  ): Promise<PrepareSaplingSpendResponse>;
+  runSaplingSigningRound(
+    req: RunSaplingSigningRoundRequest,
+  ): Promise<RunSaplingSigningRoundResponse>;
+  getSaplingVaultAddress(
+    req?: GetSaplingVaultAddressRequest,
+  ): Promise<GetSaplingVaultAddressResponse>;
+  broadcastSaplingTx(
+    req: BroadcastSaplingTxRequest,
+  ): Promise<BroadcastSaplingTxResponse>;
 }
 
 // ----- Live gRPC-Web client --------------------------------------
@@ -252,6 +345,80 @@ export class GrpcWebCoordinatorClient implements CoordinatorClient {
       errorMessage: resp.errorMessage,
     };
   }
+
+  async getSaplingVaultAddress(
+    req?: GetSaplingVaultAddressRequest,
+  ): Promise<GetSaplingVaultAddressResponse> {
+    const resp = await this.inner.getSaplingVaultAddress({
+      vault: req?.vault ?? new Uint8Array(),
+    });
+    return {
+      success: resp.success,
+      paymentAddressBech32: resp.paymentAddressBech32,
+      paymentAddressRaw: resp.paymentAddressRaw,
+      network: resp.network,
+      errorMessage: resp.errorMessage,
+    };
+  }
+
+  async prepareSaplingSpend(
+    req: PrepareSaplingSpendRequest,
+  ): Promise<PrepareSaplingSpendResponse> {
+    const resp = await this.inner.prepareSaplingSpend({
+      vault: req.vault,
+      recipientPaymentAddressRaw: req.recipientPaymentAddressRaw,
+      amountZat: req.amountZat,
+      feeZat: req.feeZat,
+      derivationPathHash: req.derivationPathHash,
+    });
+    return {
+      success: resp.success,
+      sighashToSign: resp.sighashToSign,
+      sessionId: resp.sessionId,
+      anchorHeight: resp.anchorHeight,
+      errorMessage: resp.errorMessage,
+    };
+  }
+
+  async runSaplingSigningRound(
+    req: RunSaplingSigningRoundRequest,
+  ): Promise<RunSaplingSigningRoundResponse> {
+    const resp = await this.inner.runSaplingSigningRound({
+      sessionId: req.sessionId,
+      signingRequestPda: req.signingRequestPda,
+      vault: req.vault,
+      derivationPathHash: req.derivationPathHash,
+      attemptIndex: req.attemptIndex,
+      participatingBitmask: req.participatingBitmask ?? 0b001_1111,
+    });
+    return {
+      success: resp.success,
+      roundId: resp.roundId,
+      finalSignature: resp.finalSignature,
+      attestations: resp.attestations.map((a) => ({
+        participantIndex: a.participantIndex,
+        ed25519Signature: a.ed25519Signature,
+        identityPubkey: a.identityPubkey,
+      })),
+      rawTx: resp.rawTx,
+      txid: resp.txid,
+      errorMessage: resp.errorMessage,
+    };
+  }
+
+  async broadcastSaplingTx(
+    req: BroadcastSaplingTxRequest,
+  ): Promise<BroadcastSaplingTxResponse> {
+    const resp = await this.inner.broadcastSaplingTx({
+      rawTx: req.rawTx,
+    });
+    return {
+      success: resp.success,
+      txid: resp.txid,
+      lwdErrorCode: resp.lwdErrorCode,
+      errorMessage: resp.errorMessage,
+    };
+  }
 }
 
 // ----- Mock client for unit tests --------------------------------
@@ -266,6 +433,18 @@ export class MockCoordinatorClient implements CoordinatorClient {
       buildAndSignSaplingSpend?: (
         req: BuildAndSignSaplingSpendRequest,
       ) => Promise<BuildAndSignSaplingSpendResponse>;
+      prepareSaplingSpend?: (
+        req: PrepareSaplingSpendRequest,
+      ) => Promise<PrepareSaplingSpendResponse>;
+      runSaplingSigningRound?: (
+        req: RunSaplingSigningRoundRequest,
+      ) => Promise<RunSaplingSigningRoundResponse>;
+      getSaplingVaultAddress?: (
+        req?: GetSaplingVaultAddressRequest,
+      ) => Promise<GetSaplingVaultAddressResponse>;
+      broadcastSaplingTx?: (
+        req: BroadcastSaplingTxRequest,
+      ) => Promise<BroadcastSaplingTxResponse>;
     },
   ) {}
 
@@ -288,5 +467,37 @@ export class MockCoordinatorClient implements CoordinatorClient {
     if (!this.responses.buildAndSignSaplingSpend)
       throw new Error("mock: buildAndSignSaplingSpend not scripted");
     return this.responses.buildAndSignSaplingSpend(req);
+  }
+
+  prepareSaplingSpend(
+    req: PrepareSaplingSpendRequest,
+  ): Promise<PrepareSaplingSpendResponse> {
+    if (!this.responses.prepareSaplingSpend)
+      throw new Error("mock: prepareSaplingSpend not scripted");
+    return this.responses.prepareSaplingSpend(req);
+  }
+
+  runSaplingSigningRound(
+    req: RunSaplingSigningRoundRequest,
+  ): Promise<RunSaplingSigningRoundResponse> {
+    if (!this.responses.runSaplingSigningRound)
+      throw new Error("mock: runSaplingSigningRound not scripted");
+    return this.responses.runSaplingSigningRound(req);
+  }
+
+  getSaplingVaultAddress(
+    req?: GetSaplingVaultAddressRequest,
+  ): Promise<GetSaplingVaultAddressResponse> {
+    if (!this.responses.getSaplingVaultAddress)
+      throw new Error("mock: getSaplingVaultAddress not scripted");
+    return this.responses.getSaplingVaultAddress(req);
+  }
+
+  broadcastSaplingTx(
+    req: BroadcastSaplingTxRequest,
+  ): Promise<BroadcastSaplingTxResponse> {
+    if (!this.responses.broadcastSaplingTx)
+      throw new Error("mock: broadcastSaplingTx not scripted");
+    return this.responses.broadcastSaplingTx(req);
   }
 }

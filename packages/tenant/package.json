@@ -19,7 +19,7 @@
     "typecheck": "tsc --noEmit"
   },
   "publishConfig": { "access": "public" },
-  "repository": { "type": "git", "url": "https://github.com/causeway-sh/sdk-ts" },
+  "repository": { "type": "git", "url": "https://github.com/causeway-protocol/sdk-ts" },
   "homepage": "https://causeway.sh",
   "dependencies": {
     "@causeway-sh/core": "workspace:^",
