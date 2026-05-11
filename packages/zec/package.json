@@ -1,6 +1,6 @@
 {
   "name": "@causeway-sh/zec",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0-alpha.1",
   "description": "Causeway ZEC helpers for TypeScript — t-address derivation, ZIP-244 v5 sighash, scriptSig assembly.",
   "license": "Apache-2.0",
   "type": "module",
