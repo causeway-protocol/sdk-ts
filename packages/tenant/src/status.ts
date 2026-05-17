@@ -37,17 +37,18 @@ export async function getSigningRequestStatus(
     case RequestStatus.Failed:
       return { status: "failed" };
     case RequestStatus.Completed: {
-      // Completed-signature lives in the SigningRequest body. v0.1
-      // SDK's `decodeSigningRequest` doesn't read the trailing
-      // signature_blob (which is a 80-byte zero-padded buffer plus
-      // signature_len). For now expose the status; full extraction
-      // happens in a follow-up commit once we add the trailing
-      // fields to the decoder.
+      const cs = decoded.completedSignature;
+      if (!cs) {
+        throw new SDKError(
+          "account_decode_failed",
+          "SigningRequest.status == Completed but completedSignature is missing",
+        );
+      }
       return {
         status: "completed",
-        signatureBlob: new Uint8Array(),
-        signatureLen: 0,
-        signatureFormat: 0 as SignatureFormat,
+        signatureBlob: cs.signatureBlob.slice(0, cs.signatureLen),
+        signatureLen: cs.signatureLen,
+        signatureFormat: cs.signatureFormat,
       };
     }
     default:

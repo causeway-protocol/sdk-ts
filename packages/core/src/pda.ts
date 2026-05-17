@@ -4,6 +4,7 @@
 
 import { PublicKey } from "@solana/web3.js";
 import type { AssetId } from "./enums.js";
+import { hashDerivationPathSegments } from "./derivation.js";
 
 const enc = new TextEncoder();
 const PROTOCOL_CONFIG_SEED = enc.encode("causeway:protocol-config:v1");
@@ -61,6 +62,11 @@ export function findSigningRequestPda(
 
 /// `causeway:tenant-authority:v1 || asset_byte || path_hash` — under
 /// the tenant program's id, not Causeway's.
+///
+/// `pathHash` MUST be the canonical 32-byte SHA-256 of the canonical
+/// derivation-path encoding. To avoid silent wrong-PDA bugs from
+/// callers who pass raw bytes (e.g. `userPubkey.toBytes()`) by
+/// mistake, prefer `findTenantAuthorityPdaForSegments`.
 export function findTenantAuthorityPda(
   tenantProgramId: PublicKey,
   asset: AssetId,
@@ -72,4 +78,17 @@ export function findTenantAuthorityPda(
     [TENANT_AUTHORITY_SEED, new Uint8Array([asset]), pathHash],
     tenantProgramId,
   );
+}
+
+/// Like `findTenantAuthorityPda` but takes the raw derivation-path
+/// segments and computes the canonical hash internally. Prevents the
+/// "I passed a 32-byte pubkey where a path hash was expected" class
+/// of bug.
+export function findTenantAuthorityPdaForSegments(
+  tenantProgramId: PublicKey,
+  asset: AssetId,
+  pathSegments: Uint8Array[],
+): [PublicKey, number] {
+  const pathHash = hashDerivationPathSegments(pathSegments);
+  return findTenantAuthorityPda(tenantProgramId, asset, pathHash);
 }

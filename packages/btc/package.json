@@ -1,20 +1,34 @@
 {
   "name": "@causeway-sh/btc",
-  "version": "0.1.0-alpha.2",
+  "version": "0.1.0-alpha.3",
   "description": "Causeway BTC helpers for TypeScript — P2TR address derivation, BIP-341 sighash, witness assembly, bitcoind RPC client.",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
-  "files": ["dist", "README.md", "LICENSE"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit"
   },
-  "publishConfig": { "access": "public" },
-  "repository": { "type": "git", "url": "https://github.com/causeway-protocol/sdk-ts" },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/causeway-protocol/sdk-ts"
+  },
   "homepage": "https://causeway.sh",
   "dependencies": {
     "@causeway-sh/core": "workspace:^",

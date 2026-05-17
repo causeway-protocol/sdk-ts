@@ -116,7 +116,6 @@ export interface CompleteSigningArgs {
   programId: PublicKey;
   signingRequestPda: PublicKey;
   vaultPda: PublicKey;
-  caller: PublicKey;
   participatingOperators: boolean[]; // 7
   attemptIndex: number;
   roundId: Uint8Array;       // 32
@@ -128,6 +127,10 @@ export interface CompleteSigningArgs {
   /// inspect via Sysvar::Instructions during `complete_signing`.
   attestationIxIndices: number[];
 }
+
+// The Sysvar::Instructions account (used by the program to walk
+// precompile entries) lives at a fixed pubkey.
+const SYSVAR_INSTRUCTIONS_PUBKEY = new PublicKey("Sysvar1nstructions1111111111111111111111111");
 
 export function buildCompleteSigningIx(args: CompleteSigningArgs): TransactionInstruction {
   if (args.participatingOperators.length !== 7) {
@@ -150,15 +153,11 @@ export function buildCompleteSigningIx(args: CompleteSigningArgs): TransactionIn
     ixIndicesLen,
     ixIndicesBytes,
   );
-  // The Sysvar::Instructions account (used by the program to walk
-  // precompile entries) lives at a fixed pubkey: Sysvar1nstructions1111111111111111111111111
-  const SYSVAR_INSTRUCTIONS_PUBKEY = new PublicKey("Sysvar1nstructions1111111111111111111111111");
   return new TransactionInstruction({
     programId: args.programId,
     keys: [
       { pubkey: args.signingRequestPda, isSigner: false, isWritable: true },
       { pubkey: args.vaultPda, isSigner: false, isWritable: false },
-      { pubkey: args.caller, isSigner: true, isWritable: false },
       { pubkey: SYSVAR_INSTRUCTIONS_PUBKEY, isSigner: false, isWritable: false },
     ],
     data: Buffer.from(data),
@@ -168,8 +167,11 @@ export function buildCompleteSigningIx(args: CompleteSigningArgs): TransactionIn
 export interface ExpireRequestArgs {
   programId: PublicKey;
   signingRequestPda: PublicKey;
+  /// MUST equal `SigningRequest.rent_payer`; the on-chain constraint
+  /// rejects any other receiver. Permissionless — anyone can submit this
+  /// ix regardless of who pays the fee, since the on-chain accounts
+  /// struct does not require `caller` to sign.
   rentRefundTo: PublicKey;
-  caller: PublicKey;
 }
 
 export function buildExpireRequestIx(args: ExpireRequestArgs): TransactionInstruction {
@@ -178,7 +180,6 @@ export function buildExpireRequestIx(args: ExpireRequestArgs): TransactionInstru
     keys: [
       { pubkey: args.signingRequestPda, isSigner: false, isWritable: true },
       { pubkey: args.rentRefundTo, isSigner: false, isWritable: true },
-      { pubkey: args.caller, isSigner: true, isWritable: false },
     ],
     data: Buffer.from(EXPIRE_REQUEST_DISC),
   });

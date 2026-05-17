@@ -303,6 +303,12 @@ export class GrpcWebCoordinatorClient implements CoordinatorClient {
   private readonly inner: Client<typeof CoordinatorControl>;
 
   constructor(opts: GrpcWebCoordinatorClientOptions) {
+    if (!opts || typeof opts.baseUrl !== "string" || opts.baseUrl.length === 0) {
+      throw new Error(
+        "GrpcWebCoordinatorClient: { baseUrl } is required. " +
+          "Did you pass `{ url }` by mistake? The field is `baseUrl`.",
+      );
+    }
     const transport: Transport = createGrpcWebTransport({
       baseUrl: opts.baseUrl.replace(/\/+$/, ""),
       fetch: opts.fetch,

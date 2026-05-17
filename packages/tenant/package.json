@@ -1,7 +1,7 @@
 {
   "name": "@causeway-sh/tenant",
-  "version": "0.1.0-alpha.2",
-  "description": "Generic tenant-program helpers — parameterised by tenantProgramId. PDA derivers, status pollers, completed-signature decoders.",
+  "version": "0.1.0-alpha.3",
+  "description": "Tenant-program helpers — parameterised by tenantProgramId. PDA derivers, status pollers, completed-signature decoders, plus instruction builders for the standard initiate-send ABI shipped with Causeway's reference tenant.",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -12,17 +12,27 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit"
   },
-  "publishConfig": { "access": "public" },
-  "repository": { "type": "git", "url": "https://github.com/causeway-protocol/sdk-ts" },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/causeway-protocol/sdk-ts"
+  },
   "homepage": "https://causeway.sh",
   "dependencies": {
     "@causeway-sh/core": "workspace:^",
+    "@noble/hashes": "^1.5.0",
     "@solana/web3.js": "^1.95.0"
   },
   "devDependencies": {

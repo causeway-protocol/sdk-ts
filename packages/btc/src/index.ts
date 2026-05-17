@@ -7,10 +7,11 @@
 // - sign: assemble Taproot key-spend witness from the 64-byte Schnorr sig
 // - rpc: minimal bitcoind JSON-RPC client
 
-export const VERSION = "0.1.0-alpha.0";
+export const VERSION = "0.1.0-alpha.3";
 
 export * from "./tweak.js";
 export * from "./address.js";
 export * from "./tx.js";
 export * from "./sign.js";
 export * from "./rpc.js";
+export * from "./mempool-space.js";

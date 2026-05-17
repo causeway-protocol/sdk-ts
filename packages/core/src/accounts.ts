@@ -17,6 +17,7 @@ import {
   PauseReason,
   RequestStatus,
   SighashKind,
+  SignatureFormat,
   VaultStatus,
 } from "./enums.js";
 
@@ -31,6 +32,19 @@ export const VAULT_DISCRIMINATOR = new Uint8Array([
 export const PROTOCOL_CONFIG_DISCRIMINATOR = new Uint8Array([
   207, 91, 250, 28, 152, 179, 215, 209,
 ]);
+
+/// Final aggregated signature, populated by `complete_signing`.
+/// Mirrors on-chain `CompletedSignature` exactly.
+export interface CompletedSignature {
+  signatureFormat: SignatureFormat;
+  /// 80-byte zero-padded blob. The active prefix is `signatureLen`.
+  signatureBlob: Uint8Array;
+  signatureLen: number;
+  attemptIndex: number;
+  roundId: Uint8Array;
+  /// Per-operator Ed25519 attestations; `null` for non-participating slots.
+  operatorAttestations: Array<Uint8Array | null>;
+}
 
 export interface SigningRequest {
   bump: number;
@@ -48,6 +62,11 @@ export interface SigningRequest {
   destinationAddressHash: Uint8Array | null;
   status: RequestStatus;
   participatingOperators: boolean[];
+  /// Populated by `complete_signing`. Null while `status` is `Pending`,
+  /// non-null once the request is `Completed`.
+  completedSignature: CompletedSignature | null;
+  /// Original rent payer; refunded by `expire_request`.
+  rentPayer: PublicKey;
 }
 
 const DERIVATION_PATH_MAX_LEN = 133;
@@ -78,6 +97,30 @@ export function decodeSigningRequest(data: Uint8Array): SigningRequest {
   const status = r.u8() as RequestStatus;
   const participatingOperators: boolean[] = [];
   for (let i = 0; i < 7; i++) participatingOperators.push(r.bool());
+  // Option<CompletedSignature>: a single tag byte, then the body if Some.
+  const hasCompletedSig = r.bool();
+  let completedSignature: CompletedSignature | null = null;
+  if (hasCompletedSig) {
+    const signatureFormat = r.u8() as SignatureFormat;
+    const signatureBlob = r.fixedBytes(80);
+    const signatureLen = r.u8();
+    const attemptIndex = r.u8();
+    const roundId = r.fixedBytes(32);
+    const operatorAttestations: Array<Uint8Array | null> = [];
+    for (let i = 0; i < 7; i++) {
+      const present = r.bool();
+      operatorAttestations.push(present ? r.fixedBytes(64) : null);
+    }
+    completedSignature = {
+      signatureFormat,
+      signatureBlob,
+      signatureLen,
+      attemptIndex,
+      roundId,
+      operatorAttestations,
+    };
+  }
+  const rentPayer = new PublicKey(r.fixedBytes(32));
   return {
     bump,
     vault,
@@ -94,6 +137,8 @@ export function decodeSigningRequest(data: Uint8Array): SigningRequest {
     destinationAddressHash,
     status,
     participatingOperators,
+    completedSignature,
+    rentPayer,
   };
 }
 

@@ -7,7 +7,7 @@
 // - tx: build unsigned v5 + sighash
 // - sign: scriptSig assembly with DER + low-S
 
-export const VERSION = "0.1.0-alpha.0";
+export const VERSION = "0.1.0-alpha.3";
 
 export * from "./tweak.js";
 export * from "./address.js";
@@ -15,3 +15,4 @@ export * from "./zip244.js";
 export * from "./tx.js";
 export * from "./sign.js";
 export * from "./lwd.js";
+export * from "./lwd-grpc.js";
