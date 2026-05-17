@@ -124,7 +124,21 @@ message PrepareSaplingSpendRequest {
   bytes recipient_payment_address_raw = 2; // 43 bytes
   uint64 amount_zat = 3;
   uint64 fee_zat = 4;
-  bytes derivation_path_hash = 5; // 32 bytes
+  bytes derivation_path_hash = 5;       // 32 bytes
+}
+
+// Per-user variant — coordinator restricts input-note selection to
+// notes addressed to (tenant_program_id, user_pubkey)'s diversifier.
+// Returns the same PrepareSaplingSpendResponse so the rest of the
+// flow (RunSaplingSigningRound + complete + broadcast) is unchanged.
+message PrepareUserSaplingSpendRequest {
+  bytes vault = 1;
+  bytes recipient_payment_address_raw = 2;
+  uint64 amount_zat = 3;
+  uint64 fee_zat = 4;
+  bytes derivation_path_hash = 5;
+  bytes tenant_program_id = 6;          // 32 bytes
+  bytes user_pubkey = 7;                // 32 bytes
 }
 
 message PrepareSaplingSpendResponse {
@@ -162,6 +176,38 @@ service CoordinatorControl {
   rpc RunSaplingSigningRound(RunSaplingSigningRoundRequest) returns (RunSaplingSigningRoundResponse);
   rpc GetSaplingVaultAddress(GetSaplingVaultAddressRequest) returns (GetSaplingVaultAddressResponse);
   rpc BroadcastSaplingTx(BroadcastSaplingTxRequest) returns (BroadcastSaplingTxResponse);
+  rpc GetUserSaplingAddress(GetUserSaplingAddressRequest) returns (GetUserSaplingAddressResponse);
+  rpc GetUserSaplingBalance(GetUserSaplingBalanceRequest) returns (GetUserSaplingBalanceResponse);
+  rpc PrepareUserSaplingSpend(PrepareUserSaplingSpendRequest) returns (PrepareSaplingSpendResponse);
+}
+
+// Per-user shielded vault address. Diversifier is derived
+// deterministically from (tenant_program_id, user_pubkey).
+message GetUserSaplingAddressRequest {
+  bytes tenant_program_id = 1;  // 32 bytes
+  bytes user_pubkey = 2;        // 32 bytes
+}
+
+message GetUserSaplingAddressResponse {
+  bool success = 1;
+  string payment_address_bech32 = 2;
+  bytes payment_address_raw = 3;  // 43 bytes
+  string network = 4;
+  bytes diversifier = 5;          // 11 bytes
+  string error_message = 6;
+}
+
+message GetUserSaplingBalanceRequest {
+  bytes tenant_program_id = 1;
+  bytes user_pubkey = 2;
+}
+
+message GetUserSaplingBalanceResponse {
+  bool success = 1;
+  uint64 unspent_zat = 2;
+  uint32 unspent_note_count = 3;
+  uint64 last_seen_height = 4;
+  string error_message = 5;
 }
 
 // Broadcast a v5 Sapling transaction via the coordinator's configured

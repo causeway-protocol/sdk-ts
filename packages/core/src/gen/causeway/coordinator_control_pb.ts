@@ -15,7 +15,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file causeway/coordinator_control.proto.
  */
 export const file_causeway_coordinator_control: GenFile = /*@__PURE__*/
-  fileDesc("CiJjYXVzZXdheS9jb29yZGluYXRvcl9jb250cm9sLnByb3RvEhdjYXVzZXdheS5jb29yZGluYXRvci52MSLQAgoWUnVuU2lnbmluZ1JvdW5kUmVxdWVzdBIbChNzaWduaW5nX3JlcXVlc3RfcGRhGAEgASgMEhcKD3NpZ2hhc2hfdG9fc2lnbhgCIAEoDBIhChlkZXJpdmF0aW9uX3BhdGhfY2Fub25pY2FsGAMgASgMEhwKFGRlcml2YXRpb25fcGF0aF9oYXNoGAQgASgMEhUKDWF0dGVtcHRfaW5kZXgYBSABKA0SHQoVcGFydGljaXBhdGluZ19iaXRtYXNrGAYgASgNEg0KBWFzc2V0GAcgASgJEhQKDHNpZ2hhc2hfa2luZBgIIAEoDRINCgV2YXVsdBgJIAEoDBIZChFpc19yb3RhdGlvbl9kcmFpbhgKIAEoCBIgChhkZXN0aW5hdGlvbl9hZGRyZXNzX2hhc2gYCyABKAwSGAoQc2lnbmF0dXJlX2Zvcm1hdBgMIAEoDSJkChNPcGVyYXRvckF0dGVzdGF0aW9uEhkKEXBhcnRpY2lwYW50X2luZGV4GAEgASgNEhkKEWVkMjU1MTlfc2lnbmF0dXJlGAIgASgMEhcKD2lkZW50aXR5X3B1YmtleRgDIAEoDCKwAQoXUnVuU2lnbmluZ1JvdW5kUmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCBIQCghyb3VuZF9pZBgCIAEoDBIXCg9maW5hbF9zaWduYXR1cmUYAyABKAwSQgoMYXR0ZXN0YXRpb25zGAQgAygLMiwuY2F1c2V3YXkuY29vcmRpbmF0b3IudjEuT3BlcmF0b3JBdHRlc3RhdGlvbhIVCg1lcnJvcl9tZXNzYWdlGAUgASgJIr8CChtSdW5FY2RzYVNpZ25pbmdSb3VuZFJlcXVlc3QSGwoTc2lnbmluZ19yZXF1ZXN0X3BkYRgBIAEoDBIQCghtc2dfaGFzaBgCIAEoDBIhChlkZXJpdmF0aW9uX3BhdGhfY2Fub25pY2FsGAMgASgMEhwKFGRlcml2YXRpb25fcGF0aF9oYXNoGAQgASgMEhUKDWF0dGVtcHRfaW5kZXgYBSABKA0SHQoVcGFydGljaXBhdGluZ19iaXRtYXNrGAYgASgNEg0KBXZhdWx0GAcgASgMEhkKEXRlbmFudF9wcm9ncmFtX2lkGAggASgMEg0KBWVwb2NoGAkgASgNEhQKDHNpZ2hhc2hfa2luZBgKIAEoDRIcChR0ZW5hbnRfYXV0aG9yaXR5X3BkYRgLIAEoDBINCgVhc3NldBgMIAEoDSJ+ChhPcGVyYXRvckVjZHNhQXR0ZXN0YXRpb24SGQoRcGFydGljaXBhbnRfaW5kZXgYASABKA0SGQoRZWQyNTUxOV9zaWduYXR1cmUYAiABKAwSFwoPaWRlbnRpdHlfcHVia2V5GAMgASgMEhMKC2V0aF9hZGRyZXNzGAQgASgMIoUCChxSdW5FY2RzYVNpZ25pbmdSb3VuZFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSEAoIcm91bmRfaWQYAiABKAwSEwoLc2lnbmF0dXJlX3IYAyABKAwSEwoLc2lnbmF0dXJlX3MYBCABKAwSFQoNcmVjb3ZlcnlfYnl0ZRgFIAEoDRIhChl0d2Vha2VkX3B1YmtleV9jb21wcmVzc2VkGAYgASgMEkcKDGF0dGVzdGF0aW9ucxgHIAMoCzIxLmNhdXNld2F5LmNvb3JkaW5hdG9yLnYxLk9wZXJhdG9yRWNkc2FBdHRlc3RhdGlvbhIVCg1lcnJvcl9tZXNzYWdlGAggASgJIo8CCh9CdWlsZEFuZFNpZ25TYXBsaW5nU3BlbmRSZXF1ZXN0EhsKE3NpZ25pbmdfcmVxdWVzdF9wZGEYASABKAwSDQoFdmF1bHQYAiABKAwSJQodcmVjaXBpZW50X3BheW1lbnRfYWRkcmVzc19yYXcYAyABKAwSEgoKYW1vdW50X3phdBgEIAEoBBIPCgdmZWVfemF0GAUgASgEEhUKDW5vdGVfcG9zaXRpb24YBiABKAQSEAoIbm90ZV9yY20YByABKAwSFQoNYW5jaG9yX2hlaWdodBgIIAEoDRIVCg1hdHRlbXB0X2luZGV4GAkgASgNEh0KFXBhcnRpY2lwYXRpbmdfYml0bWFzaxgKIAEoDSJ5CiBCdWlsZEFuZFNpZ25TYXBsaW5nU3BlbmRSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEg4KBnJhd190eBgCIAEoDBIPCgdzaWdoYXNoGAMgASgMEgwKBHR4aWQYBCABKAwSFQoNZXJyb3JfbWVzc2FnZRgFIAEoCSIuCh1HZXRTYXBsaW5nVmF1bHRBZGRyZXNzUmVxdWVzdBINCgV2YXVsdBgBIAEoDCKWAQoeR2V0U2FwbGluZ1ZhdWx0QWRkcmVzc1Jlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSHgoWcGF5bWVudF9hZGRyZXNzX2JlY2gzMhgCIAEoCRIbChNwYXltZW50X2FkZHJlc3NfcmF3GAMgASgMEg8KB25ldHdvcmsYBCABKAkSFQoNZXJyb3JfbWVzc2FnZRgFIAEoCSKVAQoaUHJlcGFyZVNhcGxpbmdTcGVuZFJlcXVlc3QSDQoFdmF1bHQYASABKAwSJQodcmVjaXBpZW50X3BheW1lbnRfYWRkcmVzc19yYXcYAiABKAwSEgoKYW1vdW50X3phdBgDIAEoBBIPCgdmZWVfemF0GAQgASgEEhwKFGRlcml2YXRpb25fcGF0aF9oYXNoGAUgASgMIokBChtQcmVwYXJlU2FwbGluZ1NwZW5kUmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCBIXCg9zaWdoYXNoX3RvX3NpZ24YAiABKAwSEgoKc2Vzc2lvbl9pZBgDIAEoDBIVCg1hbmNob3JfaGVpZ2h0GAQgASgNEhUKDWVycm9yX21lc3NhZ2UYBSABKAkiswEKHVJ1blNhcGxpbmdTaWduaW5nUm91bmRSZXF1ZXN0EhIKCnNlc3Npb25faWQYASABKAwSGwoTc2lnbmluZ19yZXF1ZXN0X3BkYRgCIAEoDBINCgV2YXVsdBgDIAEoDBIcChRkZXJpdmF0aW9uX3BhdGhfaGFzaBgEIAEoDBIVCg1hdHRlbXB0X2luZGV4GAUgASgNEh0KFXBhcnRpY2lwYXRpbmdfYml0bWFzaxgGIAEoDSLVAQoeUnVuU2FwbGluZ1NpZ25pbmdSb3VuZFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSEAoIcm91bmRfaWQYAiABKAwSFwoPZmluYWxfc2lnbmF0dXJlGAMgASgMEkIKDGF0dGVzdGF0aW9ucxgEIAMoCzIsLmNhdXNld2F5LmNvb3JkaW5hdG9yLnYxLk9wZXJhdG9yQXR0ZXN0YXRpb24SDgoGcmF3X3R4GAUgASgMEgwKBHR4aWQYBiABKAwSFQoNZXJyb3JfbWVzc2FnZRgHIAEoCSIrChlCcm9hZGNhc3RTYXBsaW5nVHhSZXF1ZXN0Eg4KBnJhd190eBgBIAEoDCJqChpCcm9hZGNhc3RTYXBsaW5nVHhSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEgwKBHR4aWQYAiABKAwSFgoObHdkX2Vycm9yX2NvZGUYAyABKAUSFQoNZXJyb3JfbWVzc2FnZRgEIAEoCTK8BwoSQ29vcmRpbmF0b3JDb250cm9sEnQKD1J1blNpZ25pbmdSb3VuZBIvLmNhdXNld2F5LmNvb3JkaW5hdG9yLnYxLlJ1blNpZ25pbmdSb3VuZFJlcXVlc3QaMC5jYXVzZXdheS5jb29yZGluYXRvci52MS5SdW5TaWduaW5nUm91bmRSZXNwb25zZRKDAQoUUnVuRWNkc2FTaWduaW5nUm91bmQSNC5jYXVzZXdheS5jb29yZGluYXRvci52MS5SdW5FY2RzYVNpZ25pbmdSb3VuZFJlcXVlc3QaNS5jYXVzZXdheS5jb29yZGluYXRvci52MS5SdW5FY2RzYVNpZ25pbmdSb3VuZFJlc3BvbnNlEo8BChhCdWlsZEFuZFNpZ25TYXBsaW5nU3BlbmQSOC5jYXVzZXdheS5jb29yZGluYXRvci52MS5CdWlsZEFuZFNpZ25TYXBsaW5nU3BlbmRSZXF1ZXN0GjkuY2F1c2V3YXkuY29vcmRpbmF0b3IudjEuQnVpbGRBbmRTaWduU2FwbGluZ1NwZW5kUmVzcG9uc2USgAEKE1ByZXBhcmVTYXBsaW5nU3BlbmQSMy5jYXVzZXdheS5jb29yZGluYXRvci52MS5QcmVwYXJlU2FwbGluZ1NwZW5kUmVxdWVzdBo0LmNhdXNld2F5LmNvb3JkaW5hdG9yLnYxLlByZXBhcmVTYXBsaW5nU3BlbmRSZXNwb25zZRKJAQoWUnVuU2FwbGluZ1NpZ25pbmdSb3VuZBI2LmNhdXNld2F5LmNvb3JkaW5hdG9yLnYxLlJ1blNhcGxpbmdTaWduaW5nUm91bmRSZXF1ZXN0GjcuY2F1c2V3YXkuY29vcmRpbmF0b3IudjEuUnVuU2FwbGluZ1NpZ25pbmdSb3VuZFJlc3BvbnNlEokBChZHZXRTYXBsaW5nVmF1bHRBZGRyZXNzEjYuY2F1c2V3YXkuY29vcmRpbmF0b3IudjEuR2V0U2FwbGluZ1ZhdWx0QWRkcmVzc1JlcXVlc3QaNy5jYXVzZXdheS5jb29yZGluYXRvci52MS5HZXRTYXBsaW5nVmF1bHRBZGRyZXNzUmVzcG9uc2USfQoSQnJvYWRjYXN0U2FwbGluZ1R4EjIuY2F1c2V3YXkuY29vcmRpbmF0b3IudjEuQnJvYWRjYXN0U2FwbGluZ1R4UmVxdWVzdBozLmNhdXNld2F5LmNvb3JkaW5hdG9yLnYxLkJyb2FkY2FzdFNhcGxpbmdUeFJlc3BvbnNlYgZwcm90bzM");
+  fileDesc("CiJjYXVzZXdheS9jb29yZGluYXRvcl9jb250cm9sLnByb3RvEhdjYXVzZXdheS5jb29yZGluYXRvci52MSLQAgoWUnVuU2lnbmluZ1JvdW5kUmVxdWVzdBIbChNzaWduaW5nX3JlcXVlc3RfcGRhGAEgASgMEhcKD3NpZ2hhc2hfdG9fc2lnbhgCIAEoDBIhChlkZXJpdmF0aW9uX3BhdGhfY2Fub25pY2FsGAMgASgMEhwKFGRlcml2YXRpb25fcGF0aF9oYXNoGAQgASgMEhUKDWF0dGVtcHRfaW5kZXgYBSABKA0SHQoVcGFydGljaXBhdGluZ19iaXRtYXNrGAYgASgNEg0KBWFzc2V0GAcgASgJEhQKDHNpZ2hhc2hfa2luZBgIIAEoDRINCgV2YXVsdBgJIAEoDBIZChFpc19yb3RhdGlvbl9kcmFpbhgKIAEoCBIgChhkZXN0aW5hdGlvbl9hZGRyZXNzX2hhc2gYCyABKAwSGAoQc2lnbmF0dXJlX2Zvcm1hdBgMIAEoDSJkChNPcGVyYXRvckF0dGVzdGF0aW9uEhkKEXBhcnRpY2lwYW50X2luZGV4GAEgASgNEhkKEWVkMjU1MTlfc2lnbmF0dXJlGAIgASgMEhcKD2lkZW50aXR5X3B1YmtleRgDIAEoDCKwAQoXUnVuU2lnbmluZ1JvdW5kUmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCBIQCghyb3VuZF9pZBgCIAEoDBIXCg9maW5hbF9zaWduYXR1cmUYAyABKAwSQgoMYXR0ZXN0YXRpb25zGAQgAygLMiwuY2F1c2V3YXkuY29vcmRpbmF0b3IudjEuT3BlcmF0b3JBdHRlc3RhdGlvbhIVCg1lcnJvcl9tZXNzYWdlGAUgASgJIr8CChtSdW5FY2RzYVNpZ25pbmdSb3VuZFJlcXVlc3QSGwoTc2lnbmluZ19yZXF1ZXN0X3BkYRgBIAEoDBIQCghtc2dfaGFzaBgCIAEoDBIhChlkZXJpdmF0aW9uX3BhdGhfY2Fub25pY2FsGAMgASgMEhwKFGRlcml2YXRpb25fcGF0aF9oYXNoGAQgASgMEhUKDWF0dGVtcHRfaW5kZXgYBSABKA0SHQoVcGFydGljaXBhdGluZ19iaXRtYXNrGAYgASgNEg0KBXZhdWx0GAcgASgMEhkKEXRlbmFudF9wcm9ncmFtX2lkGAggASgMEg0KBWVwb2NoGAkgASgNEhQKDHNpZ2hhc2hfa2luZBgKIAEoDRIcChR0ZW5hbnRfYXV0aG9yaXR5X3BkYRgLIAEoDBINCgVhc3NldBgMIAEoDSJ+ChhPcGVyYXRvckVjZHNhQXR0ZXN0YXRpb24SGQoRcGFydGljaXBhbnRfaW5kZXgYASABKA0SGQoRZWQyNTUxOV9zaWduYXR1cmUYAiABKAwSFwoPaWRlbnRpdHlfcHVia2V5GAMgASgMEhMKC2V0aF9hZGRyZXNzGAQgASgMIoUCChxSdW5FY2RzYVNpZ25pbmdSb3VuZFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSEAoIcm91bmRfaWQYAiABKAwSEwoLc2lnbmF0dXJlX3IYAyABKAwSEwoLc2lnbmF0dXJlX3MYBCABKAwSFQoNcmVjb3ZlcnlfYnl0ZRgFIAEoDRIhChl0d2Vha2VkX3B1YmtleV9jb21wcmVzc2VkGAYgASgMEkcKDGF0dGVzdGF0aW9ucxgHIAMoCzIxLmNhdXNld2F5LmNvb3JkaW5hdG9yLnYxLk9wZXJhdG9yRWNkc2FBdHRlc3RhdGlvbhIVCg1lcnJvcl9tZXNzYWdlGAggASgJIo8CCh9CdWlsZEFuZFNpZ25TYXBsaW5nU3BlbmRSZXF1ZXN0EhsKE3NpZ25pbmdfcmVxdWVzdF9wZGEYASABKAwSDQoFdmF1bHQYAiABKAwSJQodcmVjaXBpZW50X3BheW1lbnRfYWRkcmVzc19yYXcYAyABKAwSEgoKYW1vdW50X3phdBgEIAEoBBIPCgdmZWVfemF0GAUgASgEEhUKDW5vdGVfcG9zaXRpb24YBiABKAQSEAoIbm90ZV9yY20YByABKAwSFQoNYW5jaG9yX2hlaWdodBgIIAEoDRIVCg1hdHRlbXB0X2luZGV4GAkgASgNEh0KFXBhcnRpY2lwYXRpbmdfYml0bWFzaxgKIAEoDSJ5CiBCdWlsZEFuZFNpZ25TYXBsaW5nU3BlbmRSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEg4KBnJhd190eBgCIAEoDBIPCgdzaWdoYXNoGAMgASgMEgwKBHR4aWQYBCABKAwSFQoNZXJyb3JfbWVzc2FnZRgFIAEoCSIuCh1HZXRTYXBsaW5nVmF1bHRBZGRyZXNzUmVxdWVzdBINCgV2YXVsdBgBIAEoDCKWAQoeR2V0U2FwbGluZ1ZhdWx0QWRkcmVzc1Jlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSHgoWcGF5bWVudF9hZGRyZXNzX2JlY2gzMhgCIAEoCRIbChNwYXltZW50X2FkZHJlc3NfcmF3GAMgASgMEg8KB25ldHdvcmsYBCABKAkSFQoNZXJyb3JfbWVzc2FnZRgFIAEoCSKVAQoaUHJlcGFyZVNhcGxpbmdTcGVuZFJlcXVlc3QSDQoFdmF1bHQYASABKAwSJQodcmVjaXBpZW50X3BheW1lbnRfYWRkcmVzc19yYXcYAiABKAwSEgoKYW1vdW50X3phdBgDIAEoBBIPCgdmZWVfemF0GAQgASgEEhwKFGRlcml2YXRpb25fcGF0aF9oYXNoGAUgASgMIskBCh5QcmVwYXJlVXNlclNhcGxpbmdTcGVuZFJlcXVlc3QSDQoFdmF1bHQYASABKAwSJQodcmVjaXBpZW50X3BheW1lbnRfYWRkcmVzc19yYXcYAiABKAwSEgoKYW1vdW50X3phdBgDIAEoBBIPCgdmZWVfemF0GAQgASgEEhwKFGRlcml2YXRpb25fcGF0aF9oYXNoGAUgASgMEhkKEXRlbmFudF9wcm9ncmFtX2lkGAYgASgMEhMKC3VzZXJfcHVia2V5GAcgASgMIokBChtQcmVwYXJlU2FwbGluZ1NwZW5kUmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCBIXCg9zaWdoYXNoX3RvX3NpZ24YAiABKAwSEgoKc2Vzc2lvbl9pZBgDIAEoDBIVCg1hbmNob3JfaGVpZ2h0GAQgASgNEhUKDWVycm9yX21lc3NhZ2UYBSABKAkiswEKHVJ1blNhcGxpbmdTaWduaW5nUm91bmRSZXF1ZXN0EhIKCnNlc3Npb25faWQYASABKAwSGwoTc2lnbmluZ19yZXF1ZXN0X3BkYRgCIAEoDBINCgV2YXVsdBgDIAEoDBIcChRkZXJpdmF0aW9uX3BhdGhfaGFzaBgEIAEoDBIVCg1hdHRlbXB0X2luZGV4GAUgASgNEh0KFXBhcnRpY2lwYXRpbmdfYml0bWFzaxgGIAEoDSLVAQoeUnVuU2FwbGluZ1NpZ25pbmdSb3VuZFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSEAoIcm91bmRfaWQYAiABKAwSFwoPZmluYWxfc2lnbmF0dXJlGAMgASgMEkIKDGF0dGVzdGF0aW9ucxgEIAMoCzIsLmNhdXNld2F5LmNvb3JkaW5hdG9yLnYxLk9wZXJhdG9yQXR0ZXN0YXRpb24SDgoGcmF3X3R4GAUgASgMEgwKBHR4aWQYBiABKAwSFQoNZXJyb3JfbWVzc2FnZRgHIAEoCSJOChxHZXRVc2VyU2FwbGluZ0FkZHJlc3NSZXF1ZXN0EhkKEXRlbmFudF9wcm9ncmFtX2lkGAEgASgMEhMKC3VzZXJfcHVia2V5GAIgASgMIqoBCh1HZXRVc2VyU2FwbGluZ0FkZHJlc3NSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEh4KFnBheW1lbnRfYWRkcmVzc19iZWNoMzIYAiABKAkSGwoTcGF5bWVudF9hZGRyZXNzX3JhdxgDIAEoDBIPCgduZXR3b3JrGAQgASgJEhMKC2RpdmVyc2lmaWVyGAUgASgMEhUKDWVycm9yX21lc3NhZ2UYBiABKAkiTgocR2V0VXNlclNhcGxpbmdCYWxhbmNlUmVxdWVzdBIZChF0ZW5hbnRfcHJvZ3JhbV9pZBgBIAEoDBITCgt1c2VyX3B1YmtleRgCIAEoDCKSAQodR2V0VXNlclNhcGxpbmdCYWxhbmNlUmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCBITCgt1bnNwZW50X3phdBgCIAEoBBIaChJ1bnNwZW50X25vdGVfY291bnQYAyABKA0SGAoQbGFzdF9zZWVuX2hlaWdodBgEIAEoBBIVCg1lcnJvcl9tZXNzYWdlGAUgASgJIisKGUJyb2FkY2FzdFNhcGxpbmdUeFJlcXVlc3QSDgoGcmF3X3R4GAEgASgMImoKGkJyb2FkY2FzdFNhcGxpbmdUeFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSDAoEdHhpZBgCIAEoDBIWCg5sd2RfZXJyb3JfY29kZRgDIAEoBRIVCg1lcnJvcl9tZXNzYWdlGAQgASgJMtkKChJDb29yZGluYXRvckNvbnRyb2wSdAoPUnVuU2lnbmluZ1JvdW5kEi8uY2F1c2V3YXkuY29vcmRpbmF0b3IudjEuUnVuU2lnbmluZ1JvdW5kUmVxdWVzdBowLmNhdXNld2F5LmNvb3JkaW5hdG9yLnYxLlJ1blNpZ25pbmdSb3VuZFJlc3BvbnNlEoMBChRSdW5FY2RzYVNpZ25pbmdSb3VuZBI0LmNhdXNld2F5LmNvb3JkaW5hdG9yLnYxLlJ1bkVjZHNhU2lnbmluZ1JvdW5kUmVxdWVzdBo1LmNhdXNld2F5LmNvb3JkaW5hdG9yLnYxLlJ1bkVjZHNhU2lnbmluZ1JvdW5kUmVzcG9uc2USjwEKGEJ1aWxkQW5kU2lnblNhcGxpbmdTcGVuZBI4LmNhdXNld2F5LmNvb3JkaW5hdG9yLnYxLkJ1aWxkQW5kU2lnblNhcGxpbmdTcGVuZFJlcXVlc3QaOS5jYXVzZXdheS5jb29yZGluYXRvci52MS5CdWlsZEFuZFNpZ25TYXBsaW5nU3BlbmRSZXNwb25zZRKAAQoTUHJlcGFyZVNhcGxpbmdTcGVuZBIzLmNhdXNld2F5LmNvb3JkaW5hdG9yLnYxLlByZXBhcmVTYXBsaW5nU3BlbmRSZXF1ZXN0GjQuY2F1c2V3YXkuY29vcmRpbmF0b3IudjEuUHJlcGFyZVNhcGxpbmdTcGVuZFJlc3BvbnNlEokBChZSdW5TYXBsaW5nU2lnbmluZ1JvdW5kEjYuY2F1c2V3YXkuY29vcmRpbmF0b3IudjEuUnVuU2FwbGluZ1NpZ25pbmdSb3VuZFJlcXVlc3QaNy5jYXVzZXdheS5jb29yZGluYXRvci52MS5SdW5TYXBsaW5nU2lnbmluZ1JvdW5kUmVzcG9uc2USiQEKFkdldFNhcGxpbmdWYXVsdEFkZHJlc3MSNi5jYXVzZXdheS5jb29yZGluYXRvci52MS5HZXRTYXBsaW5nVmF1bHRBZGRyZXNzUmVxdWVzdBo3LmNhdXNld2F5LmNvb3JkaW5hdG9yLnYxLkdldFNhcGxpbmdWYXVsdEFkZHJlc3NSZXNwb25zZRJ9ChJCcm9hZGNhc3RTYXBsaW5nVHgSMi5jYXVzZXdheS5jb29yZGluYXRvci52MS5Ccm9hZGNhc3RTYXBsaW5nVHhSZXF1ZXN0GjMuY2F1c2V3YXkuY29vcmRpbmF0b3IudjEuQnJvYWRjYXN0U2FwbGluZ1R4UmVzcG9uc2UShgEKFUdldFVzZXJTYXBsaW5nQWRkcmVzcxI1LmNhdXNld2F5LmNvb3JkaW5hdG9yLnYxLkdldFVzZXJTYXBsaW5nQWRkcmVzc1JlcXVlc3QaNi5jYXVzZXdheS5jb29yZGluYXRvci52MS5HZXRVc2VyU2FwbGluZ0FkZHJlc3NSZXNwb25zZRKGAQoVR2V0VXNlclNhcGxpbmdCYWxhbmNlEjUuY2F1c2V3YXkuY29vcmRpbmF0b3IudjEuR2V0VXNlclNhcGxpbmdCYWxhbmNlUmVxdWVzdBo2LmNhdXNld2F5LmNvb3JkaW5hdG9yLnYxLkdldFVzZXJTYXBsaW5nQmFsYW5jZVJlc3BvbnNlEogBChdQcmVwYXJlVXNlclNhcGxpbmdTcGVuZBI3LmNhdXNld2F5LmNvb3JkaW5hdG9yLnYxLlByZXBhcmVVc2VyU2FwbGluZ1NwZW5kUmVxdWVzdBo0LmNhdXNld2F5LmNvb3JkaW5hdG9yLnYxLlByZXBhcmVTYXBsaW5nU3BlbmRSZXNwb25zZWIGcHJvdG8z");
 
 /**
  * @generated from message causeway.coordinator.v1.RunSigningRoundRequest
@@ -566,6 +566,62 @@ export const PrepareSaplingSpendRequestSchema: GenMessage<PrepareSaplingSpendReq
   messageDesc(file_causeway_coordinator_control, 10);
 
 /**
+ * Per-user variant — coordinator restricts input-note selection to
+ * notes addressed to (tenant_program_id, user_pubkey)'s diversifier.
+ * Returns the same PrepareSaplingSpendResponse so the rest of the
+ * flow (RunSaplingSigningRound + complete + broadcast) is unchanged.
+ *
+ * @generated from message causeway.coordinator.v1.PrepareUserSaplingSpendRequest
+ */
+export type PrepareUserSaplingSpendRequest = Message<"causeway.coordinator.v1.PrepareUserSaplingSpendRequest"> & {
+  /**
+   * @generated from field: bytes vault = 1;
+   */
+  vault: Uint8Array;
+
+  /**
+   * @generated from field: bytes recipient_payment_address_raw = 2;
+   */
+  recipientPaymentAddressRaw: Uint8Array;
+
+  /**
+   * @generated from field: uint64 amount_zat = 3;
+   */
+  amountZat: bigint;
+
+  /**
+   * @generated from field: uint64 fee_zat = 4;
+   */
+  feeZat: bigint;
+
+  /**
+   * @generated from field: bytes derivation_path_hash = 5;
+   */
+  derivationPathHash: Uint8Array;
+
+  /**
+   * 32 bytes
+   *
+   * @generated from field: bytes tenant_program_id = 6;
+   */
+  tenantProgramId: Uint8Array;
+
+  /**
+   * 32 bytes
+   *
+   * @generated from field: bytes user_pubkey = 7;
+   */
+  userPubkey: Uint8Array;
+};
+
+/**
+ * Describes the message causeway.coordinator.v1.PrepareUserSaplingSpendRequest.
+ * Use `create(PrepareUserSaplingSpendRequestSchema)` to create a new message.
+ */
+export const PrepareUserSaplingSpendRequestSchema: GenMessage<PrepareUserSaplingSpendRequest> = /*@__PURE__*/
+  messageDesc(file_causeway_coordinator_control, 11);
+
+/**
  * @generated from message causeway.coordinator.v1.PrepareSaplingSpendResponse
  */
 export type PrepareSaplingSpendResponse = Message<"causeway.coordinator.v1.PrepareSaplingSpendResponse"> & {
@@ -604,7 +660,7 @@ export type PrepareSaplingSpendResponse = Message<"causeway.coordinator.v1.Prepa
  * Use `create(PrepareSaplingSpendResponseSchema)` to create a new message.
  */
 export const PrepareSaplingSpendResponseSchema: GenMessage<PrepareSaplingSpendResponse> = /*@__PURE__*/
-  messageDesc(file_causeway_coordinator_control, 11);
+  messageDesc(file_causeway_coordinator_control, 12);
 
 /**
  * @generated from message causeway.coordinator.v1.RunSaplingSigningRoundRequest
@@ -654,7 +710,7 @@ export type RunSaplingSigningRoundRequest = Message<"causeway.coordinator.v1.Run
  * Use `create(RunSaplingSigningRoundRequestSchema)` to create a new message.
  */
 export const RunSaplingSigningRoundRequestSchema: GenMessage<RunSaplingSigningRoundRequest> = /*@__PURE__*/
-  messageDesc(file_causeway_coordinator_control, 12);
+  messageDesc(file_causeway_coordinator_control, 13);
 
 /**
  * @generated from message causeway.coordinator.v1.RunSaplingSigningRoundResponse
@@ -707,7 +763,141 @@ export type RunSaplingSigningRoundResponse = Message<"causeway.coordinator.v1.Ru
  * Use `create(RunSaplingSigningRoundResponseSchema)` to create a new message.
  */
 export const RunSaplingSigningRoundResponseSchema: GenMessage<RunSaplingSigningRoundResponse> = /*@__PURE__*/
-  messageDesc(file_causeway_coordinator_control, 13);
+  messageDesc(file_causeway_coordinator_control, 14);
+
+/**
+ * Per-user shielded vault address. Diversifier is derived
+ * deterministically from (tenant_program_id, user_pubkey).
+ *
+ * @generated from message causeway.coordinator.v1.GetUserSaplingAddressRequest
+ */
+export type GetUserSaplingAddressRequest = Message<"causeway.coordinator.v1.GetUserSaplingAddressRequest"> & {
+  /**
+   * 32 bytes
+   *
+   * @generated from field: bytes tenant_program_id = 1;
+   */
+  tenantProgramId: Uint8Array;
+
+  /**
+   * 32 bytes
+   *
+   * @generated from field: bytes user_pubkey = 2;
+   */
+  userPubkey: Uint8Array;
+};
+
+/**
+ * Describes the message causeway.coordinator.v1.GetUserSaplingAddressRequest.
+ * Use `create(GetUserSaplingAddressRequestSchema)` to create a new message.
+ */
+export const GetUserSaplingAddressRequestSchema: GenMessage<GetUserSaplingAddressRequest> = /*@__PURE__*/
+  messageDesc(file_causeway_coordinator_control, 15);
+
+/**
+ * @generated from message causeway.coordinator.v1.GetUserSaplingAddressResponse
+ */
+export type GetUserSaplingAddressResponse = Message<"causeway.coordinator.v1.GetUserSaplingAddressResponse"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+
+  /**
+   * @generated from field: string payment_address_bech32 = 2;
+   */
+  paymentAddressBech32: string;
+
+  /**
+   * 43 bytes
+   *
+   * @generated from field: bytes payment_address_raw = 3;
+   */
+  paymentAddressRaw: Uint8Array;
+
+  /**
+   * @generated from field: string network = 4;
+   */
+  network: string;
+
+  /**
+   * 11 bytes
+   *
+   * @generated from field: bytes diversifier = 5;
+   */
+  diversifier: Uint8Array;
+
+  /**
+   * @generated from field: string error_message = 6;
+   */
+  errorMessage: string;
+};
+
+/**
+ * Describes the message causeway.coordinator.v1.GetUserSaplingAddressResponse.
+ * Use `create(GetUserSaplingAddressResponseSchema)` to create a new message.
+ */
+export const GetUserSaplingAddressResponseSchema: GenMessage<GetUserSaplingAddressResponse> = /*@__PURE__*/
+  messageDesc(file_causeway_coordinator_control, 16);
+
+/**
+ * @generated from message causeway.coordinator.v1.GetUserSaplingBalanceRequest
+ */
+export type GetUserSaplingBalanceRequest = Message<"causeway.coordinator.v1.GetUserSaplingBalanceRequest"> & {
+  /**
+   * @generated from field: bytes tenant_program_id = 1;
+   */
+  tenantProgramId: Uint8Array;
+
+  /**
+   * @generated from field: bytes user_pubkey = 2;
+   */
+  userPubkey: Uint8Array;
+};
+
+/**
+ * Describes the message causeway.coordinator.v1.GetUserSaplingBalanceRequest.
+ * Use `create(GetUserSaplingBalanceRequestSchema)` to create a new message.
+ */
+export const GetUserSaplingBalanceRequestSchema: GenMessage<GetUserSaplingBalanceRequest> = /*@__PURE__*/
+  messageDesc(file_causeway_coordinator_control, 17);
+
+/**
+ * @generated from message causeway.coordinator.v1.GetUserSaplingBalanceResponse
+ */
+export type GetUserSaplingBalanceResponse = Message<"causeway.coordinator.v1.GetUserSaplingBalanceResponse"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+
+  /**
+   * @generated from field: uint64 unspent_zat = 2;
+   */
+  unspentZat: bigint;
+
+  /**
+   * @generated from field: uint32 unspent_note_count = 3;
+   */
+  unspentNoteCount: number;
+
+  /**
+   * @generated from field: uint64 last_seen_height = 4;
+   */
+  lastSeenHeight: bigint;
+
+  /**
+   * @generated from field: string error_message = 5;
+   */
+  errorMessage: string;
+};
+
+/**
+ * Describes the message causeway.coordinator.v1.GetUserSaplingBalanceResponse.
+ * Use `create(GetUserSaplingBalanceResponseSchema)` to create a new message.
+ */
+export const GetUserSaplingBalanceResponseSchema: GenMessage<GetUserSaplingBalanceResponse> = /*@__PURE__*/
+  messageDesc(file_causeway_coordinator_control, 18);
 
 /**
  * Broadcast a v5 Sapling transaction via the coordinator's configured
@@ -728,7 +918,7 @@ export type BroadcastSaplingTxRequest = Message<"causeway.coordinator.v1.Broadca
  * Use `create(BroadcastSaplingTxRequestSchema)` to create a new message.
  */
 export const BroadcastSaplingTxRequestSchema: GenMessage<BroadcastSaplingTxRequest> = /*@__PURE__*/
-  messageDesc(file_causeway_coordinator_control, 14);
+  messageDesc(file_causeway_coordinator_control, 19);
 
 /**
  * @generated from message causeway.coordinator.v1.BroadcastSaplingTxResponse
@@ -764,7 +954,7 @@ export type BroadcastSaplingTxResponse = Message<"causeway.coordinator.v1.Broadc
  * Use `create(BroadcastSaplingTxResponseSchema)` to create a new message.
  */
 export const BroadcastSaplingTxResponseSchema: GenMessage<BroadcastSaplingTxResponse> = /*@__PURE__*/
-  messageDesc(file_causeway_coordinator_control, 15);
+  messageDesc(file_causeway_coordinator_control, 20);
 
 /**
  * @generated from service causeway.coordinator.v1.CoordinatorControl
@@ -825,6 +1015,30 @@ export const CoordinatorControl: GenService<{
     methodKind: "unary";
     input: typeof BroadcastSaplingTxRequestSchema;
     output: typeof BroadcastSaplingTxResponseSchema;
+  },
+  /**
+   * @generated from rpc causeway.coordinator.v1.CoordinatorControl.GetUserSaplingAddress
+   */
+  getUserSaplingAddress: {
+    methodKind: "unary";
+    input: typeof GetUserSaplingAddressRequestSchema;
+    output: typeof GetUserSaplingAddressResponseSchema;
+  },
+  /**
+   * @generated from rpc causeway.coordinator.v1.CoordinatorControl.GetUserSaplingBalance
+   */
+  getUserSaplingBalance: {
+    methodKind: "unary";
+    input: typeof GetUserSaplingBalanceRequestSchema;
+    output: typeof GetUserSaplingBalanceResponseSchema;
+  },
+  /**
+   * @generated from rpc causeway.coordinator.v1.CoordinatorControl.PrepareUserSaplingSpend
+   */
+  prepareUserSaplingSpend: {
+    methodKind: "unary";
+    input: typeof PrepareUserSaplingSpendRequestSchema;
+    output: typeof PrepareSaplingSpendResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_causeway_coordinator_control, 0);

@@ -139,6 +139,20 @@ export interface PrepareSaplingSpendRequest {
   derivationPathHash: Uint8Array;
 }
 
+/// Per-user variant of PrepareSaplingSpend. The coordinator restricts
+/// input-note selection to notes addressed to the (tenant, user)
+/// diversifier so a user can only spend notes deposited to their
+/// own derived vault address.
+export interface PrepareUserSaplingSpendRequest {
+  vault: Uint8Array;
+  recipientPaymentAddressRaw: Uint8Array;
+  amountZat: bigint;
+  feeZat: bigint;
+  derivationPathHash: Uint8Array;
+  tenantProgramId: Uint8Array;   // 32 bytes
+  userPubkey: Uint8Array;        // 32 bytes
+}
+
 export interface PrepareSaplingSpendResponse {
   success: boolean;
   /// 32-byte ZIP-244 shielded sighash. Caller commits to this
@@ -195,6 +209,33 @@ export interface GetSaplingVaultAddressResponse {
   errorMessage: string;
 }
 
+export interface GetUserSaplingAddressRequest {
+  tenantProgramId: Uint8Array;  // 32 bytes
+  userPubkey: Uint8Array;        // 32 bytes
+}
+
+export interface GetUserSaplingAddressResponse {
+  success: boolean;
+  paymentAddressBech32: string;
+  paymentAddressRaw: Uint8Array;  // 43 bytes
+  network: string;
+  diversifier: Uint8Array;        // 11 bytes
+  errorMessage: string;
+}
+
+export interface GetUserSaplingBalanceRequest {
+  tenantProgramId: Uint8Array;
+  userPubkey: Uint8Array;
+}
+
+export interface GetUserSaplingBalanceResponse {
+  success: boolean;
+  unspentZat: bigint;
+  unspentNoteCount: number;
+  lastSeenHeight: bigint;
+  errorMessage: string;
+}
+
 export interface BroadcastSaplingTxRequest {
   /// v5 Sapling transaction bytes (from RunSaplingSigningRound.rawTx).
   rawTx: Uint8Array;
@@ -223,6 +264,9 @@ export interface CoordinatorClient {
   prepareSaplingSpend(
     req: PrepareSaplingSpendRequest,
   ): Promise<PrepareSaplingSpendResponse>;
+  prepareUserSaplingSpend(
+    req: PrepareUserSaplingSpendRequest,
+  ): Promise<PrepareSaplingSpendResponse>;
   runSaplingSigningRound(
     req: RunSaplingSigningRoundRequest,
   ): Promise<RunSaplingSigningRoundResponse>;
@@ -232,6 +276,12 @@ export interface CoordinatorClient {
   broadcastSaplingTx(
     req: BroadcastSaplingTxRequest,
   ): Promise<BroadcastSaplingTxResponse>;
+  getUserSaplingAddress(
+    req: GetUserSaplingAddressRequest,
+  ): Promise<GetUserSaplingAddressResponse>;
+  getUserSaplingBalance(
+    req: GetUserSaplingBalanceRequest,
+  ): Promise<GetUserSaplingBalanceResponse>;
 }
 
 // ----- Live gRPC-Web client --------------------------------------
@@ -380,6 +430,27 @@ export class GrpcWebCoordinatorClient implements CoordinatorClient {
     };
   }
 
+  async prepareUserSaplingSpend(
+    req: PrepareUserSaplingSpendRequest,
+  ): Promise<PrepareSaplingSpendResponse> {
+    const resp = await this.inner.prepareUserSaplingSpend({
+      vault: req.vault,
+      recipientPaymentAddressRaw: req.recipientPaymentAddressRaw,
+      amountZat: req.amountZat,
+      feeZat: req.feeZat,
+      derivationPathHash: req.derivationPathHash,
+      tenantProgramId: req.tenantProgramId,
+      userPubkey: req.userPubkey,
+    });
+    return {
+      success: resp.success,
+      sighashToSign: resp.sighashToSign,
+      sessionId: resp.sessionId,
+      anchorHeight: resp.anchorHeight,
+      errorMessage: resp.errorMessage,
+    };
+  }
+
   async runSaplingSigningRound(
     req: RunSaplingSigningRoundRequest,
   ): Promise<RunSaplingSigningRoundResponse> {
@@ -419,6 +490,39 @@ export class GrpcWebCoordinatorClient implements CoordinatorClient {
       errorMessage: resp.errorMessage,
     };
   }
+
+  async getUserSaplingAddress(
+    req: GetUserSaplingAddressRequest,
+  ): Promise<GetUserSaplingAddressResponse> {
+    const resp = await this.inner.getUserSaplingAddress({
+      tenantProgramId: req.tenantProgramId,
+      userPubkey: req.userPubkey,
+    });
+    return {
+      success: resp.success,
+      paymentAddressBech32: resp.paymentAddressBech32,
+      paymentAddressRaw: resp.paymentAddressRaw,
+      network: resp.network,
+      diversifier: resp.diversifier,
+      errorMessage: resp.errorMessage,
+    };
+  }
+
+  async getUserSaplingBalance(
+    req: GetUserSaplingBalanceRequest,
+  ): Promise<GetUserSaplingBalanceResponse> {
+    const resp = await this.inner.getUserSaplingBalance({
+      tenantProgramId: req.tenantProgramId,
+      userPubkey: req.userPubkey,
+    });
+    return {
+      success: resp.success,
+      unspentZat: resp.unspentZat,
+      unspentNoteCount: resp.unspentNoteCount,
+      lastSeenHeight: resp.lastSeenHeight,
+      errorMessage: resp.errorMessage,
+    };
+  }
 }
 
 // ----- Mock client for unit tests --------------------------------
@@ -436,6 +540,9 @@ export class MockCoordinatorClient implements CoordinatorClient {
       prepareSaplingSpend?: (
         req: PrepareSaplingSpendRequest,
       ) => Promise<PrepareSaplingSpendResponse>;
+      prepareUserSaplingSpend?: (
+        req: PrepareUserSaplingSpendRequest,
+      ) => Promise<PrepareSaplingSpendResponse>;
       runSaplingSigningRound?: (
         req: RunSaplingSigningRoundRequest,
       ) => Promise<RunSaplingSigningRoundResponse>;
@@ -445,6 +552,12 @@ export class MockCoordinatorClient implements CoordinatorClient {
       broadcastSaplingTx?: (
         req: BroadcastSaplingTxRequest,
       ) => Promise<BroadcastSaplingTxResponse>;
+      getUserSaplingAddress?: (
+        req: GetUserSaplingAddressRequest,
+      ) => Promise<GetUserSaplingAddressResponse>;
+      getUserSaplingBalance?: (
+        req: GetUserSaplingBalanceRequest,
+      ) => Promise<GetUserSaplingBalanceResponse>;
     },
   ) {}
 
@@ -477,6 +590,14 @@ export class MockCoordinatorClient implements CoordinatorClient {
     return this.responses.prepareSaplingSpend(req);
   }
 
+  prepareUserSaplingSpend(
+    req: PrepareUserSaplingSpendRequest,
+  ): Promise<PrepareSaplingSpendResponse> {
+    if (!this.responses.prepareUserSaplingSpend)
+      throw new Error("mock: prepareUserSaplingSpend not scripted");
+    return this.responses.prepareUserSaplingSpend(req);
+  }
+
   runSaplingSigningRound(
     req: RunSaplingSigningRoundRequest,
   ): Promise<RunSaplingSigningRoundResponse> {
@@ -499,5 +620,21 @@ export class MockCoordinatorClient implements CoordinatorClient {
     if (!this.responses.broadcastSaplingTx)
       throw new Error("mock: broadcastSaplingTx not scripted");
     return this.responses.broadcastSaplingTx(req);
+  }
+
+  getUserSaplingAddress(
+    req: GetUserSaplingAddressRequest,
+  ): Promise<GetUserSaplingAddressResponse> {
+    if (!this.responses.getUserSaplingAddress)
+      throw new Error("mock: getUserSaplingAddress not scripted");
+    return this.responses.getUserSaplingAddress(req);
+  }
+
+  getUserSaplingBalance(
+    req: GetUserSaplingBalanceRequest,
+  ): Promise<GetUserSaplingBalanceResponse> {
+    if (!this.responses.getUserSaplingBalance)
+      throw new Error("mock: getUserSaplingBalance not scripted");
+    return this.responses.getUserSaplingBalance(req);
   }
 }
