@@ -1,6 +1,6 @@
 {
   "name": "@causeway-sh/evm",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.2",
   "description": "Causeway EVM helpers for TypeScript — address derivation, EIP-1559 sighash, signed-tx assembly. Uses viem for RLP/keccak.",
   "license": "Apache-2.0",
   "type": "module",
