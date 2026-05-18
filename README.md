@@ -23,6 +23,7 @@ derived from the threshold pubkey + a tenant-defined path.
 | [`@causeway-sh/zec`](./packages/zec) | Zcash transparent address derivation + ZIP-244 v5 sighash + scriptSig assembly + lightwalletd gRPC-Web client. | dApps integrating ZEC-T. |
 | [`@causeway-sh/btc`](./packages/btc) | Bitcoin P2TR address derivation + BIP-341 sighash + witness assembly + bitcoind RPC client. | dApps integrating BTC. |
 | [`@causeway-sh/sapling`](./packages/sapling) | Zcash Sapling shielded — bech32 payment-address parse/encode + `BuildAndSignSaplingSpend` / `BroadcastSaplingTx` coordinator wrappers. | dApps integrating shielded ZEC. |
+| [`@causeway-sh/orchard`](./packages/orchard) | Zcash Orchard shielded — bech32m payment-address parse/encode + per-user two-phase spend wrappers (Prepare → on-chain `initiate_orchard_send` → Run → Broadcast). | dApps integrating Orchard ZEC. |
 
 Asset packages depend on `core` + `tenant` only, never on each other.
 A bundle-size CI gate blocks cross-asset imports so an EVM-only
@@ -32,7 +33,8 @@ consumer doesn't pull in the Zcash bundle.
 
 ```bash
 pnpm add @causeway-sh/core @causeway-sh/evm     # for EVM dApps
-pnpm add @causeway-sh/core @causeway-sh/sapling # for shielded ZEC
+pnpm add @causeway-sh/core @causeway-sh/sapling # for shielded ZEC (Sapling)
+pnpm add @causeway-sh/core @causeway-sh/orchard # for shielded ZEC (Orchard)
 ```
 
 ## Quickstart
@@ -70,9 +72,10 @@ See each per-package README for asset-specific snippets.
 ## Status
 
 Alpha. We've broadcast end-to-end threshold-signed transactions on
-Bitcoin, Base, and Zcash mainnet (shielded + transparent) using this
-SDK. The protocol is not audited and the on-chain program is
-unverified bytecode. Do not move funds you can't afford to lose.
+Bitcoin, Base, and Zcash mainnet (transparent + Sapling), plus
+Orchard threshold spends on regtest. The protocol is not audited and
+the on-chain program is unverified bytecode. Do not move funds you
+can't afford to lose.
 
 ## Workspace
 

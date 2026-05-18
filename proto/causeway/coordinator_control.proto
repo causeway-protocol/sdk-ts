@@ -1,9 +1,15 @@
 syntax = "proto3";
 
-// CLI ↔ coordinator control plane. Mirrors the main-repo file at
-// `coordinator/proto/coordinator_control.proto` (sha256 verified at
-// `pnpm proto:check`). Vendored here so the sdk-ts repo can `buf
-// generate` without a path-dep on the main repo.
+// CLI ↔ coordinator control plane. Vendored from the main causeway repo
+// (`coordinator/proto/coordinator_control.proto`) so the sdk-ts repo
+// can `buf generate` without a path-dep. Re-sync via copy when the
+// coordinator proto changes.
+//
+// The CLI hands a target signing tuple (PDA, sighash, derivation path,
+// attempt, participating bitmask) to the coordinator and the coordinator
+// drives the FROST round across the operator daemons, returning the
+// aggregated 64-byte BIP-340 Schnorr signature plus the per-operator
+// I4 attestations.
 
 package causeway.coordinator.v1;
 
@@ -16,156 +22,254 @@ message RunSigningRoundRequest {
   uint32 participating_bitmask = 6;    // low 7 bits set per M1 5-of-7
   string asset = 7;                    // "Btc" | "Eth" | "ZecT" | "Sapling" | "Orchard"
   uint32 sighash_kind = 8;
-  bytes vault = 9;                     // 32 bytes
+  // Vault PDA (32 bytes). Required for the I4 attestation payload.
+  bytes vault = 9;
+  // Whether this is a `begin_rotation` drain spend.
   bool is_rotation_drain = 10;
+  // Destination commitment hash for rotation; zeros otherwise.
   bytes destination_address_hash = 11;
+  // 0 = BIP-340 Schnorr Taproot key-spend.
   uint32 signature_format = 12;
 }
 
 message OperatorAttestation {
   uint32 participant_index = 1;
   bytes ed25519_signature = 2;  // 64 bytes
-  bytes identity_pubkey = 3;    // 32 bytes
+  bytes identity_pubkey = 3;    // 32 bytes — operator's identity verifying key
 }
 
 message RunSigningRoundResponse {
   bool success = 1;
   bytes round_id = 2;          // 32 bytes
-  bytes final_signature = 3;   // 64 bytes
+  bytes final_signature = 3;   // 64 bytes (BIP-340 Schnorr)
   repeated OperatorAttestation attestations = 4;
-  string error_message = 5;
+  string error_message = 5;    // populated when success=false
 }
 
+// ECDSA flavour of RunSigningRound (cait-sith threshold ECDSA over
+// secp256k1). Same RPC handles both ETH (asset=1) and ZEC-T (asset=2)
+// — the operator-side attestation flow is asset-agnostic above the
+// sighash layer; the CLI feeds asset-specific sighashes (keccak256
+// for ETH, ZIP-244 for ZEC) but the protocol below that doesn't
+// care.
 message RunEcdsaSigningRoundRequest {
-  bytes signing_request_pda = 1;
-  bytes msg_hash = 2;
+  bytes signing_request_pda = 1;       // 32 bytes
+  bytes msg_hash = 2;                  // 32 bytes; the asset's sighash
   bytes derivation_path_canonical = 3;
-  bytes derivation_path_hash = 4;
+  bytes derivation_path_hash = 4;      // 32 bytes
   uint32 attempt_index = 5;
   uint32 participating_bitmask = 6;
-  bytes vault = 7;
-  bytes tenant_program_id = 8;
+  bytes vault = 7;                     // 32 bytes
+  bytes tenant_program_id = 8;         // 32 bytes
   uint32 epoch = 9;
-  uint32 sighash_kind = 10;
-  bytes tenant_authority_pda = 11;
+  uint32 sighash_kind = 10;            // 3=EthEip1559, 4=ZecTransparentZip244
+  // Tenant authority PDA (CLI-derived from tenant_program_id, asset
+  // byte, derivation_path_hash). Equals `signing_request.tenant`
+  // on-chain. Operators need this to compute the I4 payload_hash.
+  bytes tenant_authority_pda = 11;     // 32 bytes
+  // AssetId byte: 1=Eth, 2=ZecT. Routes to the right operator share
+  // store + drives the Causeway tweak's asset-byte input. Reusing
+  // the ECDSA pipeline for both means we don't fork the protocol;
+  // only the off-chain construction (sighash builder, address
+  // derivation, broadcast format) differs.
   uint32 asset = 12;
 }
 
 message OperatorEcdsaAttestation {
   uint32 participant_index = 1;
+  // 65-byte recoverable ECDSA over I4 payload (r∥s∥v).
   bytes ed25519_signature = 2;
-  bytes identity_pubkey = 3;
+  bytes identity_pubkey = 3;           // 32 bytes — Ed25519 (kept for parity with BTC)
+  // 20-byte hash of the operator's secp256k1 identity pubkey. For
+  // ETH this matches `vault.eth_operator_address(idx)`; for ZEC the
+  // same accessor reads back the same per-operator identity address
+  // (we deliberately reuse the ETH pack scheme).
   bytes eth_address = 4;
 }
 
 message RunEcdsaSigningRoundResponse {
   bool success = 1;
-  bytes round_id = 2;
-  bytes signature_r = 3;
-  bytes signature_s = 4;
-  uint32 recovery_byte = 5;
-  bytes tweaked_pubkey_compressed = 6;
+  bytes round_id = 2;                  // 32 bytes (= session_id)
+  bytes signature_r = 3;               // 32 bytes
+  bytes signature_s = 4;               // 32 bytes
+  uint32 recovery_byte = 5;            // 0 or 1; meaningful for ETH, ignored for ZEC DER
+  bytes tweaked_pubkey_compressed = 6; // 33 bytes
   repeated OperatorEcdsaAttestation attestations = 7;
   string error_message = 8;
 }
 
-// Sapling shielded spend. Unlike the Schnorr/ECDSA RPCs above, the
-// coordinator owns the full transaction-construction pipeline: it
-// builds the v5 PCZT, runs Groth16, computes the ZIP-244 sighash,
-// drives the FROST-RedJubjub round, and returns a broadcast-ready
-// raw transaction. Necessary because the spend-auth signature is
-// over a sighash that depends on the proof-bound `rk`, which the
+// Sapling shielded spend. Unlike the Schnorr/ECDSA RPCs above which
+// sign a caller-provided sighash, the coordinator owns the full
+// transaction-construction pipeline for shielded spends: it builds
+// the v5 PCZT, runs Groth16, computes the ZIP-244 sighash, drives
+// the FROST-RedJubjub round, and returns the broadcastable raw
+// transaction. This is necessary because the spend-auth signature is
+// over a sighash that depends on the proof-bound rk, which the
 // caller doesn't have.
 message BuildAndSignSaplingSpendRequest {
-  bytes signing_request_pda = 1;       // 32 bytes
-  bytes vault = 2;                     // 32 bytes
-  bytes recipient_payment_address_raw = 3; // 43 bytes (diversifier ‖ pk_d)
+  // 32-byte SigningRequest PDA on Solana. Used as round_id and
+  // ties the off-chain spend to the on-chain authorization.
+  bytes signing_request_pda = 1;
+  // 32-byte vault PDA. Routes to the per-vault FVK + nsk on the
+  // coordinator side.
+  bytes vault = 2;
+  // Recipient Sapling payment address (43 raw bytes — the bech32
+  // payload, not the bech32 string).
+  bytes recipient_payment_address_raw = 3;
+  // Note value to spend, in zatoshis. The note itself is identified
+  // by `note_position` + `note_rcm`; the coordinator maintains the
+  // witness/store and reconstructs the note + merkle path.
   uint64 amount_zat = 4;
   uint64 fee_zat = 5;
+  // Note identification — coordinator looks the note up in its
+  // witness store. Position is the leaf index in the Sapling
+  // commitment tree at the anchor height.
   uint64 note_position = 6;
-  bytes note_rcm = 7;                  // 32 bytes
+  bytes note_rcm = 7;             // 32 bytes
+  // Anchor height the merkle path is rooted at. Must be ≥
+  // (current_height - 100) to satisfy zcashd's anchor depth.
   uint32 anchor_height = 8;
   uint32 attempt_index = 9;
-  uint32 participating_bitmask = 10;
+  uint32 participating_bitmask = 10;  // low 7 bits set per M1 5-of-7
 }
 
 message BuildAndSignSaplingSpendResponse {
   bool success = 1;
+  // Raw v5 transaction bytes, ready for `sendrawtransaction`.
   bytes raw_tx = 2;
-  bytes sighash = 3;                   // 32 bytes (ZIP-244 shielded sighash)
-  bytes txid = 4;                      // 32 bytes
+  // 32-byte ZIP-244 shielded sighash. CLI logs / on-chain attestation
+  // path can use this to cross-check.
+  bytes sighash = 3;
+  // 32-byte transaction id (computed from raw_tx by the caller, but
+  // returned here for convenience so the CLI can print it before
+  // broadcasting).
+  bytes txid = 4;
   string error_message = 5;
 }
 
-// Sapling vault address discovery. A dApp can't reconstruct a vault's
-// zaddr from on-chain state alone: bech32 commits to (ak ‖ nk ‖ ovk)
-// plus a chosen diversifier, but only `ak` is on-chain in
-// `Vault.threshold_pubkey`. nk/ovk/diversifier live in the
-// coordinator. This RPC surfaces them — the bech32 zaddr itself is
-// public (a deposit address), even though the material that produces
-// it is private.
-message GetSaplingVaultAddressRequest {
-  bytes vault = 1; // optional; M2.0 single-vault deployments leave empty
-}
+// --- On-chain audit-trail Sapling flow -----------------------------
+//
+// The direct BuildAndSignSaplingSpend RPC above is convenient but
+// skips the Solana SigningRequest PDA lifecycle. The two RPCs below
+// split the Sapling spend across the same three-phase flow BTC/ETH/
+// ZEC-T use:
+//
+//   1. PrepareSaplingSpend (coordinator-only): coordinator picks a
+//      note, builds the PCZT, runs Groth16, computes the ZIP-244
+//      sighash, caches `(PCZT, alpha, anchor)` keyed by a returned
+//      session_id, and returns the 32-byte sighash to the caller.
+//      No FROST round runs in this phase.
+//
+//   2. Caller submits Solana `tenant_demo::initiate_sapling_send`
+//      with that sighash. The on-chain SigningRequest PDA is the
+//      audit-trail anchor.
+//
+//   3. RunSaplingSigningRound (coordinator): caller passes the
+//      session_id + signing_request_pda. Coordinator runs FROST,
+//      applies signatures to the cached PCZT, freezes the tx, and
+//      returns the raw_tx + the operator I4 attestations the
+//      caller will need for the on-chain `complete_signing`.
+//
+//   4. Caller submits Solana `causeway::complete_signing` with the
+//      64-byte aggregated signature + attestations. The on-chain
+//      SigningRequest flips Pending → Completed.
+//
+//   5. Caller broadcasts the raw_tx via zcashd `sendrawtransaction`.
 
-message GetSaplingVaultAddressResponse {
-  bool success = 1;
-  string payment_address_bech32 = 2;
-  bytes payment_address_raw = 3;     // 43 raw bytes (diversifier(11) ‖ pk_d(32))
-  string network = 4;                // "mainnet" | "testnet" | "regtest"
-  string error_message = 5;
-}
-
-// Two-phase Sapling spend with on-chain audit trail (coordinator-side
-// pieces; the on-chain piece is `tenant::initiate_sapling_send` +
-// `causeway::complete_signing`).
 message PrepareSaplingSpendRequest {
+  // 32-byte vault PDA — coordinator looks up the FVK + nsk for it.
   bytes vault = 1;
-  bytes recipient_payment_address_raw = 2; // 43 bytes
-  uint64 amount_zat = 3;
-  uint64 fee_zat = 4;
-  bytes derivation_path_hash = 5;       // 32 bytes
-}
-
-// Per-user variant — coordinator restricts input-note selection to
-// notes addressed to (tenant_program_id, user_pubkey)'s diversifier.
-// Returns the same PrepareSaplingSpendResponse so the rest of the
-// flow (RunSaplingSigningRound + complete + broadcast) is unchanged.
-message PrepareUserSaplingSpendRequest {
-  bytes vault = 1;
+  // Recipient Sapling payment address (43 raw bytes — the bech32
+  // payload, not the bech32 string).
   bytes recipient_payment_address_raw = 2;
   uint64 amount_zat = 3;
   uint64 fee_zat = 4;
+  // 32-byte derivation-path hash, used as a session-cache key
+  // component so two callers preparing for the same user/path
+  // don't collide.
   bytes derivation_path_hash = 5;
-  bytes tenant_program_id = 6;          // 32 bytes
-  bytes user_pubkey = 7;                // 32 bytes
 }
 
 message PrepareSaplingSpendResponse {
   bool success = 1;
-  bytes sighash_to_sign = 2;       // 32 bytes
-  bytes session_id = 3;            // 16 bytes
+  // 32-byte ZIP-244 shielded sighash. The caller commits to this on
+  // Solana via `initiate_sapling_send`.
+  bytes sighash_to_sign = 2;
+  // 16-byte opaque session id. Bound to (vault, recipient, amount,
+  // fee, derivation_path_hash); coordinator caches the prepared
+  // (PCZT, alpha, anchor) under this id with a TTL.
+  bytes session_id = 3;
+  // 32-byte commitment-tree anchor height the prepared spend is
+  // bound to. Surfaced so the caller can validate it's still within
+  // the consensus window before submitting on-chain.
   uint32 anchor_height = 4;
   string error_message = 5;
 }
 
 message RunSaplingSigningRoundRequest {
-  bytes session_id = 1;            // 16 bytes
-  bytes signing_request_pda = 2;   // 32 bytes
-  bytes vault = 3;                 // 32 bytes
-  bytes derivation_path_hash = 4;  // 32 bytes
+  // 16-byte session id from PrepareSaplingSpend.
+  bytes session_id = 1;
+  // 32-byte SigningRequest PDA the caller just opened on Solana.
+  // Used as round_id seed and recorded against the I4 payload hash
+  // each operator signs.
+  bytes signing_request_pda = 2;
+  // 32-byte vault PDA. Must match the one passed to PrepareSaplingSpend.
+  bytes vault = 3;
+  // 32-byte derivation_path_hash. Must match prepare.
+  bytes derivation_path_hash = 4;
   uint32 attempt_index = 5;
   uint32 participating_bitmask = 6;
 }
 
 message RunSaplingSigningRoundResponse {
   bool success = 1;
-  bytes round_id = 2;              // 32 bytes
-  bytes final_signature = 3;       // 64 bytes (FROST-RedJubjub spend-auth)
+  // 32-byte round id (canonical formula over the input tuple,
+  // matches on-chain `complete_signing` validation).
+  bytes round_id = 2;
+  // 64-byte aggregated FROST-RedJubjub spend-auth signature. The
+  // caller passes this to on-chain `complete_signing` as the
+  // `signature_blob`.
+  bytes final_signature = 3;
+  // Per-operator Ed25519 attestations over the I4 payload hash. The
+  // caller forwards these to `complete_signing`.
   repeated OperatorAttestation attestations = 4;
+  // Broadcast-ready v5 transaction bytes. Returned alongside the
+  // signature so callers can submit `complete_signing` and broadcast
+  // in parallel — the on-chain receipt and the chain inclusion are
+  // independent.
   bytes raw_tx = 5;
-  bytes txid = 6;                  // 32 bytes
+  // 32-byte transaction id.
+  bytes txid = 6;
   string error_message = 7;
+}
+
+// Sapling vault address discovery. A dApp can't reconstruct a vault's
+// zaddr from on-chain state alone: the bech32 payload commits to the
+// vault's full Sapling FullViewingKey (ak ‖ nk ‖ ovk) plus a chosen
+// diversifier, but only `ak` is published on-chain (in
+// `Vault.threshold_pubkey`). nk/ovk/diversifier live in the
+// coordinator's process. This RPC surfaces them — the bech32 zaddr
+// itself is public information (a deposit address), even though the
+// material that produces it is private.
+message GetSaplingVaultAddressRequest {
+  // Optional. If omitted, the coordinator returns the single
+  // configured vault address (M2.0 single-vault deployment). For
+  // multi-vault deployments this field disambiguates.
+  bytes vault = 1;
+}
+
+message GetSaplingVaultAddressResponse {
+  bool success = 1;
+  // Bech32 payment-address string (zs1… / ztestsapling1… / zregtestsapling1…).
+  string payment_address_bech32 = 2;
+  // Raw 43 bytes — the bech32 payload (diversifier(11) ‖ pk_d(32)).
+  // Callers building a Sapling spend on the dApp side need this raw
+  // form to pass to BuildAndSignSaplingSpend / PrepareSaplingSpend.
+  bytes payment_address_raw = 3;
+  // Network the coordinator is configured for ("mainnet" |
+  // "testnet" | "regtest").
+  string network = 4;
+  string error_message = 5;
 }
 
 service CoordinatorControl {
@@ -179,29 +283,126 @@ service CoordinatorControl {
   rpc GetUserSaplingAddress(GetUserSaplingAddressRequest) returns (GetUserSaplingAddressResponse);
   rpc GetUserSaplingBalance(GetUserSaplingBalanceRequest) returns (GetUserSaplingBalanceResponse);
   rpc PrepareUserSaplingSpend(PrepareUserSaplingSpendRequest) returns (PrepareSaplingSpendResponse);
+
+  // ── Orchard ──────────────────────────────────────────────────
+  rpc GetOrchardVaultAddress(GetOrchardVaultAddressRequest) returns (GetOrchardVaultAddressResponse);
+  rpc GetUserOrchardAddress(GetUserOrchardAddressRequest) returns (GetUserOrchardAddressResponse);
+  rpc GetUserOrchardBalance(GetUserOrchardBalanceRequest) returns (GetUserOrchardBalanceResponse);
+  rpc PrepareUserOrchardSpend(PrepareUserOrchardSpendRequest) returns (PrepareOrchardSpendResponse);
+  rpc RunOrchardSigningRound(RunOrchardSigningRoundRequest) returns (RunOrchardSigningRoundResponse);
+  rpc BroadcastOrchardTx(BroadcastOrchardTxRequest) returns (BroadcastOrchardTxResponse);
 }
 
-// Per-user shielded vault address. Diversifier is derived
-// deterministically from (tenant_program_id, user_pubkey).
-message GetUserSaplingAddressRequest {
-  bytes tenant_program_id = 1;  // 32 bytes
-  bytes user_pubkey = 2;        // 32 bytes
+// ─── Orchard RPCs ──────────────────────────────────────────────
+
+message GetOrchardVaultAddressRequest {
+  bytes vault = 1; // optional; if empty the coordinator picks the active vault
 }
 
-message GetUserSaplingAddressResponse {
+message GetOrchardVaultAddressResponse {
   bool success = 1;
   string payment_address_bech32 = 2;
-  bytes payment_address_raw = 3;  // 43 bytes
-  string network = 4;
-  bytes diversifier = 5;          // 11 bytes
+  bytes payment_address_raw = 3; // 43 bytes
+  bytes diversifier = 4;         // 11 bytes
+  string network = 5;            // "main" | "test" | "regtest"
   string error_message = 6;
 }
 
-message GetUserSaplingBalanceRequest {
+message GetUserOrchardAddressRequest {
+  bytes tenant_program_id = 1; // 32 bytes
+  bytes user_pubkey = 2;       // 32 bytes
+}
+
+message GetUserOrchardAddressResponse {
+  bool success = 1;
+  string payment_address_bech32 = 2;
+  bytes payment_address_raw = 3;
+  bytes diversifier = 4;
+  string network = 5;
+  string error_message = 6;
+}
+
+message GetUserOrchardBalanceRequest {
   bytes tenant_program_id = 1;
   bytes user_pubkey = 2;
 }
 
+message GetUserOrchardBalanceResponse {
+  bool success = 1;
+  uint64 unspent_zat = 2;
+  uint32 note_count = 3;
+  uint64 last_seen_height = 4;
+  string error_message = 5;
+}
+
+message PrepareUserOrchardSpendRequest {
+  bytes vault = 1;
+  bytes recipient_payment_address_raw = 2; // 43 bytes
+  uint64 amount_zat = 3;
+  uint64 fee_zat = 4;
+  bytes derivation_path_hash = 5;
+  bytes tenant_program_id = 6;
+  bytes user_pubkey = 7;
+}
+
+message PrepareOrchardSpendResponse {
+  bool success = 1;
+  bytes sighash_to_sign = 2;
+  bytes session_id = 3;
+  uint64 anchor_height = 4;
+  string error_message = 5;
+}
+
+message RunOrchardSigningRoundRequest {
+  bytes session_id = 1;
+  bytes signing_request_pda = 2;
+  bytes vault = 3;
+  bytes derivation_path_hash = 4;
+  uint32 attempt_index = 5;
+  uint32 participating_bitmask = 6;
+}
+
+message RunOrchardSigningRoundResponse {
+  bool success = 1;
+  bytes round_id = 2;
+  bytes final_signature = 3;
+  repeated OperatorAttestation attestations = 4;
+  bytes raw_tx = 5;
+  bytes txid = 6;
+  string error_message = 7;
+}
+
+message BroadcastOrchardTxRequest {
+  bytes raw_tx = 1;
+}
+
+message BroadcastOrchardTxResponse {
+  bool success = 1;
+  bytes txid = 2;
+  int32 lwd_error_code = 3;
+  string error_message = 4;
+}
+
+// Per-user Sapling deposit address — diversifier derived from
+// (tenant_program_id, user_pubkey).
+message GetUserSaplingAddressRequest {
+  bytes tenant_program_id = 1;  // 32 bytes
+  bytes user_pubkey = 2;        // 32 bytes
+}
+message GetUserSaplingAddressResponse {
+  bool success = 1;
+  string payment_address_bech32 = 2;
+  bytes payment_address_raw = 3;
+  string network = 4;
+  bytes diversifier = 5;
+  string error_message = 6;
+}
+
+// Unspent balance for a (tenant, user) pair.
+message GetUserSaplingBalanceRequest {
+  bytes tenant_program_id = 1;
+  bytes user_pubkey = 2;
+}
 message GetUserSaplingBalanceResponse {
   bool success = 1;
   uint64 unspent_zat = 2;
@@ -210,16 +411,34 @@ message GetUserSaplingBalanceResponse {
   string error_message = 5;
 }
 
+// Per-user variant of PrepareSaplingSpend — restricts input-note
+// selection to notes addressed to (tenant, user)'s diversifier.
+// Returns the same PrepareSaplingSpendResponse so callers can reuse
+// the existing RunSaplingSigningRound + complete + broadcast flow.
+message PrepareUserSaplingSpendRequest {
+  bytes vault = 1;
+  bytes recipient_payment_address_raw = 2;  // 43 bytes
+  uint64 amount_zat = 3;
+  uint64 fee_zat = 4;
+  bytes derivation_path_hash = 5;
+  bytes tenant_program_id = 6;              // 32 bytes
+  bytes user_pubkey = 7;                    // 32 bytes
+}
+
 // Broadcast a v5 Sapling transaction via the coordinator's configured
-// lightwalletd. Use this after RunSaplingSigningRound so the caller
-// never needs to run its own lwd/zcashd.
+// lightwalletd. dApps that hold a coordinator-signed `raw_tx` (from
+// RunSaplingSigningRound) use this to ship it to mainnet without
+// running their own lightwalletd/zcashd. The coordinator forwards via
+// `lightwalletd::SendTransaction`; whatever error code lwd returns is
+// surfaced verbatim.
 message BroadcastSaplingTxRequest {
-  bytes raw_tx = 1;
+  bytes raw_tx = 1; // v5 transaction bytes
 }
 
 message BroadcastSaplingTxResponse {
   bool success = 1;
-  // 32-byte transaction id, computed locally from raw_tx.
+  // 32-byte transaction id. Computed locally from raw_tx (the lwd
+  // SendResponse doesn't return one).
   bytes txid = 2;
   // lightwalletd error code if non-zero. 0 means success.
   int32 lwd_error_code = 3;

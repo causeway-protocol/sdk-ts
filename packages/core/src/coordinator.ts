@@ -9,7 +9,7 @@
 // The high-level `CoordinatorClient` interface below wraps the
 // generated client and shapes inputs/outputs into the camelCase /
 // `Uint8Array` style consumers prefer; downstream packages
-// (`@causeway-sh/{evm,zec,btc,sapling}`) depend on the interface,
+// (`@causeway-sh/{evm,zec,btc,sapling,orchard}`) depend on the interface,
 // not the generated types.
 
 import { createClient } from "@connectrpc/connect";
@@ -251,6 +251,119 @@ export interface BroadcastSaplingTxResponse {
   errorMessage: string;
 }
 
+// ----- Orchard --------------------------------------------------
+//
+// Orchard mirrors the Sapling per-user flow shape but with a few
+// proto-level deltas (network = "main" | "test" | "regtest", balance
+// `noteCount` field name, anchorHeight as bigint). Downstream
+// `@causeway-sh/orchard` wraps these in user-facing helpers.
+
+export interface GetOrchardVaultAddressRequest {
+  /// Optional. Leave empty for single-vault deployments; the
+  /// coordinator returns the configured vault's bech32m address.
+  vault?: Uint8Array;
+}
+
+export interface GetOrchardVaultAddressResponse {
+  success: boolean;
+  /// bech32m string with HRP `uorchardmain` / `uorchardtest` /
+  /// `uorchardreg`. Not a canonical Unified Address — see the
+  /// coordinator's `control.rs` for the encoding rationale.
+  paymentAddressBech32: string;
+  /// Raw 43 bytes — bech32m payload (diversifier(11) ‖ pk_d(32)).
+  paymentAddressRaw: Uint8Array;
+  /// 11-byte diversifier (first half of the 43-byte payload).
+  diversifier: Uint8Array;
+  /// "main" | "test" | "regtest".
+  network: string;
+  errorMessage: string;
+}
+
+export interface GetUserOrchardAddressRequest {
+  tenantProgramId: Uint8Array;  // 32 bytes
+  userPubkey: Uint8Array;       // 32 bytes
+}
+
+export interface GetUserOrchardAddressResponse {
+  success: boolean;
+  paymentAddressBech32: string;
+  paymentAddressRaw: Uint8Array;
+  diversifier: Uint8Array;
+  network: string;
+  errorMessage: string;
+}
+
+export interface GetUserOrchardBalanceRequest {
+  tenantProgramId: Uint8Array;
+  userPubkey: Uint8Array;
+}
+
+export interface GetUserOrchardBalanceResponse {
+  success: boolean;
+  unspentZat: bigint;
+  /// Number of unspent notes addressed to the user's diversifier.
+  noteCount: number;
+  lastSeenHeight: bigint;
+  errorMessage: string;
+}
+
+export interface PrepareUserOrchardSpendRequest {
+  vault: Uint8Array;
+  /// Raw 43-byte bech32m payload of the recipient's Orchard address.
+  recipientPaymentAddressRaw: Uint8Array;
+  amountZat: bigint;
+  feeZat: bigint;
+  derivationPathHash: Uint8Array;
+  tenantProgramId: Uint8Array;
+  userPubkey: Uint8Array;
+}
+
+export interface PrepareOrchardSpendResponse {
+  success: boolean;
+  /// 32-byte ZIP-244 v5 shielded sighash. Caller commits to this
+  /// on-chain via `tenant_demo::initiate_orchard_send`.
+  sighashToSign: Uint8Array;
+  /// 16-byte opaque session id; coordinator caches the prepared
+  /// (PCZT, alpha, anchor) under it with a TTL bounded by the
+  /// 80-block anchor-staleness window.
+  sessionId: Uint8Array;
+  anchorHeight: bigint;
+  errorMessage: string;
+}
+
+export interface RunOrchardSigningRoundRequest {
+  sessionId: Uint8Array;          // 16 bytes
+  signingRequestPda: Uint8Array;  // 32 bytes
+  vault: Uint8Array;
+  derivationPathHash: Uint8Array;
+  attemptIndex: number;
+  participatingBitmask?: number;
+}
+
+export interface RunOrchardSigningRoundResponse {
+  success: boolean;
+  roundId: Uint8Array;
+  /// 64-byte aggregated FROST-RedPallas spend-auth signature.
+  finalSignature: Uint8Array;
+  attestations: OperatorAttestation[];
+  /// Broadcast-ready v5 transaction bytes.
+  rawTx: Uint8Array;
+  txid: Uint8Array;
+  errorMessage: string;
+}
+
+export interface BroadcastOrchardTxRequest {
+  /// v5 Orchard transaction bytes (from RunOrchardSigningRound.rawTx).
+  rawTx: Uint8Array;
+}
+
+export interface BroadcastOrchardTxResponse {
+  success: boolean;
+  txid: Uint8Array;
+  lwdErrorCode: number;
+  errorMessage: string;
+}
+
 // ----- CoordinatorClient interface -------------------------------
 
 export interface CoordinatorClient {
@@ -282,6 +395,24 @@ export interface CoordinatorClient {
   getUserSaplingBalance(
     req: GetUserSaplingBalanceRequest,
   ): Promise<GetUserSaplingBalanceResponse>;
+  getOrchardVaultAddress(
+    req?: GetOrchardVaultAddressRequest,
+  ): Promise<GetOrchardVaultAddressResponse>;
+  getUserOrchardAddress(
+    req: GetUserOrchardAddressRequest,
+  ): Promise<GetUserOrchardAddressResponse>;
+  getUserOrchardBalance(
+    req: GetUserOrchardBalanceRequest,
+  ): Promise<GetUserOrchardBalanceResponse>;
+  prepareUserOrchardSpend(
+    req: PrepareUserOrchardSpendRequest,
+  ): Promise<PrepareOrchardSpendResponse>;
+  runOrchardSigningRound(
+    req: RunOrchardSigningRoundRequest,
+  ): Promise<RunOrchardSigningRoundResponse>;
+  broadcastOrchardTx(
+    req: BroadcastOrchardTxRequest,
+  ): Promise<BroadcastOrchardTxResponse>;
 }
 
 // ----- Live gRPC-Web client --------------------------------------
@@ -529,6 +660,116 @@ export class GrpcWebCoordinatorClient implements CoordinatorClient {
       errorMessage: resp.errorMessage,
     };
   }
+
+  async getOrchardVaultAddress(
+    req?: GetOrchardVaultAddressRequest,
+  ): Promise<GetOrchardVaultAddressResponse> {
+    const resp = await this.inner.getOrchardVaultAddress({
+      vault: req?.vault ?? new Uint8Array(),
+    });
+    return {
+      success: resp.success,
+      paymentAddressBech32: resp.paymentAddressBech32,
+      paymentAddressRaw: resp.paymentAddressRaw,
+      diversifier: resp.diversifier,
+      network: resp.network,
+      errorMessage: resp.errorMessage,
+    };
+  }
+
+  async getUserOrchardAddress(
+    req: GetUserOrchardAddressRequest,
+  ): Promise<GetUserOrchardAddressResponse> {
+    const resp = await this.inner.getUserOrchardAddress({
+      tenantProgramId: req.tenantProgramId,
+      userPubkey: req.userPubkey,
+    });
+    return {
+      success: resp.success,
+      paymentAddressBech32: resp.paymentAddressBech32,
+      paymentAddressRaw: resp.paymentAddressRaw,
+      diversifier: resp.diversifier,
+      network: resp.network,
+      errorMessage: resp.errorMessage,
+    };
+  }
+
+  async getUserOrchardBalance(
+    req: GetUserOrchardBalanceRequest,
+  ): Promise<GetUserOrchardBalanceResponse> {
+    const resp = await this.inner.getUserOrchardBalance({
+      tenantProgramId: req.tenantProgramId,
+      userPubkey: req.userPubkey,
+    });
+    return {
+      success: resp.success,
+      unspentZat: resp.unspentZat,
+      noteCount: resp.noteCount,
+      lastSeenHeight: resp.lastSeenHeight,
+      errorMessage: resp.errorMessage,
+    };
+  }
+
+  async prepareUserOrchardSpend(
+    req: PrepareUserOrchardSpendRequest,
+  ): Promise<PrepareOrchardSpendResponse> {
+    const resp = await this.inner.prepareUserOrchardSpend({
+      vault: req.vault,
+      recipientPaymentAddressRaw: req.recipientPaymentAddressRaw,
+      amountZat: req.amountZat,
+      feeZat: req.feeZat,
+      derivationPathHash: req.derivationPathHash,
+      tenantProgramId: req.tenantProgramId,
+      userPubkey: req.userPubkey,
+    });
+    return {
+      success: resp.success,
+      sighashToSign: resp.sighashToSign,
+      sessionId: resp.sessionId,
+      anchorHeight: resp.anchorHeight,
+      errorMessage: resp.errorMessage,
+    };
+  }
+
+  async runOrchardSigningRound(
+    req: RunOrchardSigningRoundRequest,
+  ): Promise<RunOrchardSigningRoundResponse> {
+    const resp = await this.inner.runOrchardSigningRound({
+      sessionId: req.sessionId,
+      signingRequestPda: req.signingRequestPda,
+      vault: req.vault,
+      derivationPathHash: req.derivationPathHash,
+      attemptIndex: req.attemptIndex,
+      participatingBitmask: req.participatingBitmask ?? 0b001_1111,
+    });
+    return {
+      success: resp.success,
+      roundId: resp.roundId,
+      finalSignature: resp.finalSignature,
+      attestations: resp.attestations.map((a) => ({
+        participantIndex: a.participantIndex,
+        ed25519Signature: a.ed25519Signature,
+        identityPubkey: a.identityPubkey,
+      })),
+      rawTx: resp.rawTx,
+      txid: resp.txid,
+      errorMessage: resp.errorMessage,
+    };
+  }
+
+  async broadcastOrchardTx(
+    req: BroadcastOrchardTxRequest,
+  ): Promise<BroadcastOrchardTxResponse> {
+    const resp = await this.inner.broadcastOrchardTx({
+      rawTx: req.rawTx,
+    });
+    return {
+      success: resp.success,
+      txid: resp.txid,
+      lwdErrorCode: resp.lwdErrorCode,
+      errorMessage: resp.errorMessage,
+    };
+  }
 }
 
 // ----- Mock client for unit tests --------------------------------
@@ -564,6 +805,24 @@ export class MockCoordinatorClient implements CoordinatorClient {
       getUserSaplingBalance?: (
         req: GetUserSaplingBalanceRequest,
       ) => Promise<GetUserSaplingBalanceResponse>;
+      getOrchardVaultAddress?: (
+        req?: GetOrchardVaultAddressRequest,
+      ) => Promise<GetOrchardVaultAddressResponse>;
+      getUserOrchardAddress?: (
+        req: GetUserOrchardAddressRequest,
+      ) => Promise<GetUserOrchardAddressResponse>;
+      getUserOrchardBalance?: (
+        req: GetUserOrchardBalanceRequest,
+      ) => Promise<GetUserOrchardBalanceResponse>;
+      prepareUserOrchardSpend?: (
+        req: PrepareUserOrchardSpendRequest,
+      ) => Promise<PrepareOrchardSpendResponse>;
+      runOrchardSigningRound?: (
+        req: RunOrchardSigningRoundRequest,
+      ) => Promise<RunOrchardSigningRoundResponse>;
+      broadcastOrchardTx?: (
+        req: BroadcastOrchardTxRequest,
+      ) => Promise<BroadcastOrchardTxResponse>;
     },
   ) {}
 
@@ -642,5 +901,53 @@ export class MockCoordinatorClient implements CoordinatorClient {
     if (!this.responses.getUserSaplingBalance)
       throw new Error("mock: getUserSaplingBalance not scripted");
     return this.responses.getUserSaplingBalance(req);
+  }
+
+  getOrchardVaultAddress(
+    req?: GetOrchardVaultAddressRequest,
+  ): Promise<GetOrchardVaultAddressResponse> {
+    if (!this.responses.getOrchardVaultAddress)
+      throw new Error("mock: getOrchardVaultAddress not scripted");
+    return this.responses.getOrchardVaultAddress(req);
+  }
+
+  getUserOrchardAddress(
+    req: GetUserOrchardAddressRequest,
+  ): Promise<GetUserOrchardAddressResponse> {
+    if (!this.responses.getUserOrchardAddress)
+      throw new Error("mock: getUserOrchardAddress not scripted");
+    return this.responses.getUserOrchardAddress(req);
+  }
+
+  getUserOrchardBalance(
+    req: GetUserOrchardBalanceRequest,
+  ): Promise<GetUserOrchardBalanceResponse> {
+    if (!this.responses.getUserOrchardBalance)
+      throw new Error("mock: getUserOrchardBalance not scripted");
+    return this.responses.getUserOrchardBalance(req);
+  }
+
+  prepareUserOrchardSpend(
+    req: PrepareUserOrchardSpendRequest,
+  ): Promise<PrepareOrchardSpendResponse> {
+    if (!this.responses.prepareUserOrchardSpend)
+      throw new Error("mock: prepareUserOrchardSpend not scripted");
+    return this.responses.prepareUserOrchardSpend(req);
+  }
+
+  runOrchardSigningRound(
+    req: RunOrchardSigningRoundRequest,
+  ): Promise<RunOrchardSigningRoundResponse> {
+    if (!this.responses.runOrchardSigningRound)
+      throw new Error("mock: runOrchardSigningRound not scripted");
+    return this.responses.runOrchardSigningRound(req);
+  }
+
+  broadcastOrchardTx(
+    req: BroadcastOrchardTxRequest,
+  ): Promise<BroadcastOrchardTxResponse> {
+    if (!this.responses.broadcastOrchardTx)
+      throw new Error("mock: broadcastOrchardTx not scripted");
+    return this.responses.broadcastOrchardTx(req);
   }
 }

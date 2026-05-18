@@ -1,7 +1,7 @@
 {
-  "name": "@causeway-sh/btc",
+  "name": "@causeway-sh/orchard",
   "version": "0.1.0-alpha.4",
-  "description": "Causeway BTC helpers for TypeScript — P2TR address derivation, BIP-341 sighash, witness assembly, bitcoind RPC client.",
+  "description": "Causeway Orchard shielded helpers for TypeScript — bech32m address codec + two-phase user spend flow (coordinator drives PCZT/Halo 2/FROST-RedPallas).",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -32,10 +32,7 @@
   "homepage": "https://causeway.sh",
   "dependencies": {
     "@causeway-sh/core": "workspace:^",
-    "@noble/hashes": "^1.5.0",
-    "@noble/curves": "^1.6.0",
-    "@scure/btc-signer": "^1.5.0",
-    "@scure/base": "^1.1.0"
+    "@scure/base": "^1.1.7"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

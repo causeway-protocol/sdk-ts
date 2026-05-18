@@ -15,7 +15,7 @@
 //     `raw_tx` via @causeway-sh/core's CoordinatorClient and
 //     broadcast it; that's the entirety of the SDK Sapling surface.
 
-export const VERSION = "0.1.0-alpha.3";
+export const VERSION = "0.1.0-alpha.4";
 
 export * from "./address.js";
 export * from "./zcashd.js";

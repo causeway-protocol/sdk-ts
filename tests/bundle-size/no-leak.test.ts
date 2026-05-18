@@ -29,6 +29,7 @@ const ASSET_NAMES = [
   "@causeway-sh/zec",
   "@causeway-sh/evm",
   "@causeway-sh/sapling",
+  "@causeway-sh/orchard",
 ] as const;
 
 describe("bundle-size leak guard", () => {
@@ -37,6 +38,7 @@ describe("bundle-size leak guard", () => {
     "packages/zec",
     "packages/btc",
     "packages/sapling",
+    "packages/orchard",
   ]) {
     it(`${assetPkg} does not depend on any other asset package`, () => {
       const pkg = readPkg(`${assetPkg}/package.json`);

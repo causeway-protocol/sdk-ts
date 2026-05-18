@@ -1,6 +1,6 @@
 {
   "name": "@causeway-sh/sapling",
-  "version": "0.1.0-alpha.3",
+  "version": "0.1.0-alpha.4",
   "description": "Causeway Sapling shielded helpers for TypeScript — bech32 z-address parse/encode + sendToZaddr end-to-end (coordinator drives PCZT/Groth16/FROST).",
   "license": "Apache-2.0",
   "type": "module",

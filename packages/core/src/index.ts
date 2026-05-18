@@ -5,7 +5,7 @@
 // coordinator gRPC-Web client, the `complete_signing` convenience
 // helper, and typed SDK errors.
 
-export const VERSION = "0.1.0-alpha.3";
+export const VERSION = "0.1.0-alpha.4";
 
 export * from "./enums.js";
 export * from "./pda.js";

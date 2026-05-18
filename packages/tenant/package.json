@@ -1,6 +1,6 @@
 {
   "name": "@causeway-sh/tenant",
-  "version": "0.1.0-alpha.3",
+  "version": "0.1.0-alpha.4",
   "description": "Tenant-program helpers — parameterised by tenantProgramId. PDA derivers, status pollers, completed-signature decoders, plus instruction builders for the standard initiate-send ABI shipped with Causeway's reference tenant.",
   "license": "Apache-2.0",
   "type": "module",

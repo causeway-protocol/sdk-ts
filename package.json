@@ -2,7 +2,7 @@
   "name": "causeway-sh-sdk-ts",
   "private": true,
   "version": "0.1.0-alpha.0",
-  "description": "Causeway TypeScript SDK monorepo. Six packages: core + tenant + evm + zec + btc + sapling.",
+  "description": "Causeway TypeScript SDK monorepo. Seven packages: core + tenant + evm + zec + btc + sapling + orchard.",
   "license": "Apache-2.0",
   "type": "module",
   "engines": {

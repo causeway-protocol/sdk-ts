@@ -23,7 +23,7 @@
 //     `tenantProgramId` to target your own deployment of the same ABI.
 //     Tenants with a divergent ABI ship their own builders.
 
-export const VERSION = "0.1.0-alpha.3";
+export const VERSION = "0.1.0-alpha.4";
 
 export * from "./constants.js";
 export * from "./pda.js";
